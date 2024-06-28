@@ -5,6 +5,6 @@
 	"minAppVersion": "0.15.0",
 	"description": "Remove newlines from text selections and also paste content from the clipboard without newlines. This plugin is useful if you ever copy-paste from a PDF.",
 	"author": "Elias Jaffe",
-	"authorUrl": "https://obsidian.md",
+	"authorUrl": "https://github.com/HandcartCactus",
 	"isDesktopOnly": false
 }
