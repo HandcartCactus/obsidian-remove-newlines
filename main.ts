@@ -72,7 +72,7 @@ export default class RemoveNewline extends Plugin {
 			})
 		);
 
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new RemoveNewlineSettingsTab(this.app, this));
 	}
 
 	onunload() {}
@@ -120,7 +120,7 @@ export default class RemoveNewline extends Plugin {
 	}
 }
 
-class SampleSettingTab extends PluginSettingTab {
+class RemoveNewlineSettingsTab extends PluginSettingTab {
 	plugin: RemoveNewline;
 
 	constructor(app: App, plugin: RemoveNewline) {
