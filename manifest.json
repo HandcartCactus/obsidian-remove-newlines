@@ -3,7 +3,7 @@
 	"name": "Remove Newlines",
 	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
-	"description": "Remove newlines from text selections and also paste content from the clipboard without newlines. This plugin is useful if you ever copy-paste from a PDF.",
+	"description": "Remove newlines from text selections and also paste content from the clipboard without newlines.",
 	"author": "Elias Jaffe",
 	"authorUrl": "https://github.com/HandcartCactus",
 	"isDesktopOnly": false
