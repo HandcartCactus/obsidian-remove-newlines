@@ -133,10 +133,6 @@ class RemoveNewlineSettingsTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		new Setting(containerEl).setName('Remove Newlines').setHeading();
-
-		//containerEl.createEl("h2", { text: "Remove Newlines From Selection" });
-
 		new Setting(containerEl)
 			.setName("Fix whitespace")
 			.setDesc(
