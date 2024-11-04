@@ -27,9 +27,13 @@ export default class RemoveNewline extends Plugin {
 		this.addCommand({
 			id: "remove-newlines-from-selection",
 			name: "Remove newlines from selection",
-			editorCheckCallback(checking, editor, ctx) {
+			editorCheckCallback: (checking, editor, ctx) => {
 				if (editor.somethingSelected()) {
 					if (!checking) {
+						if (typeof this.removeNewlinesFromSelection !== "function") {
+							console.error("removeNewlinesFromSelection is not defined or not a function.");
+							return false;
+						}
 						this.removeNewlinesFromSelection(editor);
 					}
 					return true;
@@ -41,8 +45,12 @@ export default class RemoveNewline extends Plugin {
 		this.addCommand({
 			id: "paste-without-newlines",
 			name: "Paste without newlines",
-			editorCallback(editor) {
-				this.pasteWithoutNewlines(editor);
+			editorCallback: (editor) => {
+				if (typeof this.pasteWithoutNewlines !== "function") {
+					console.error("pasteWithoutNewlines is not defined or not a function.");
+					return;
+				}
+				void this.pasteWithoutNewlines(editor);
 			},
 		});
 
@@ -66,7 +74,7 @@ export default class RemoveNewline extends Plugin {
 						.setIcon("clipboard-paste")
 						//.setDisabled(this.clipboardHasText())
 						.onClick(() => {
-							this.pasteWithoutNewlines(editor);
+							void this.pasteWithoutNewlines(editor);
 						});
 				});
 			})
@@ -89,12 +97,13 @@ export default class RemoveNewline extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	removeNewlines(text: string) {
+	removeNewlines = (text: string): string => {
+		
 		if (this.settings.fixHyphenation) {
-			text = text.replace(/-\n/g, "");
+			text = text.replace(/-(\r\n|\r|\n)/g, "");
 		}
 
-		text = text.replace(/\n/g, " ");
+		text = text.replace(/(\r\n|\r|\n)/g, " ");
 
 		if (this.settings.fixWhitespace) {
 			text = text.replace(/\s{2,}/g, " ");
@@ -103,7 +112,7 @@ export default class RemoveNewline extends Plugin {
 		return text;
 	}
 
-	removeNewlinesFromSelection(editor: Editor) {
+	removeNewlinesFromSelection = (editor: Editor): void =>  {
 		let selection = editor.getSelection();
 
 		selection = this.removeNewlines(selection);
@@ -111,7 +120,7 @@ export default class RemoveNewline extends Plugin {
 		editor.replaceSelection(selection);
 	}
 
-	async pasteWithoutNewlines(editor: Editor) {
+	pasteWithoutNewlines = async (editor: Editor): Promise<void> => {
 		let selection = await navigator.clipboard.readText();
 
 		selection = this.removeNewlines(selection);
