@@ -48,7 +48,7 @@ There are no hotkeys for these actions by default, but you can create them in th
 
 ## Installing
 ### Via the Community Plugin Manager
-1. Open the Community Plugins tab of your vault's settings modal.
+1. Open the Community Plugins tab of your Obsidian's settings modal.
 2. Click the "Browse" button under "Community Plugins".
 2. Search for "Remove Newlines".
 3. Click "Install" on the plugin page, then "Enable".
