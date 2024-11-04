@@ -2,7 +2,6 @@
 import {
 	App,
 	Editor,
-	MarkdownView,
 	Plugin,
 	PluginSettingTab,
 	Setting,
@@ -24,6 +23,7 @@ export default class RemoveNewline extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
+		// Command / Remove newlines / Selection
 		this.addCommand({
 			id: "remove-newlines-from-selection",
 			name: "Remove newlines from selection",
@@ -41,7 +41,7 @@ export default class RemoveNewline extends Plugin {
 				return false;
 			},
 		});
-
+		// Command / Remove newlines / Paste
 		this.addCommand({
 			id: "paste-without-newlines",
 			name: "Paste without newlines",
@@ -54,6 +54,7 @@ export default class RemoveNewline extends Plugin {
 			},
 		});
 
+		// Context menu / Remove newlines / Selection
 		this.registerEvent(
 			this.app.workspace.on("editor-menu", (menu, editor, view) => {
 				menu.addItem((item) => {
@@ -67,6 +68,7 @@ export default class RemoveNewline extends Plugin {
 			})
 		);
 
+		// Context menu  / Remove newlines  / Paste
 		this.registerEvent(
 			this.app.workspace.on("editor-menu", (menu, editor, view) => {
 				menu.addItem((item) => {
@@ -79,6 +81,56 @@ export default class RemoveNewline extends Plugin {
 				});
 			})
 		);
+
+		// Context menu / Remove Blank Lines / Selection
+		this.registerEvent(
+			this.app.workspace.on("editor-menu", (menu, editor, view) => {
+				menu.addItem((item)  => {
+					item.setTitle("Remove blank lines from selection")
+						.setIcon("square-bottom-dashed-scissors")
+						.setDisabled(!editor.somethingSelected())
+						.onClick(() => this.removeBlankLinesFromSelection(editor));
+				});
+			})
+		);
+
+		// Context menu / Remove Blank Lines / Paste
+		this.registerEvent(
+			this.app.workspace.on("editor-menu", (menu, editor, view) => {
+				menu.addItem((item) => {
+					item.setTitle("Paste without blank lines")
+						.setIcon("clipboard-paste")
+						//.setDisabled(this.clipboardHasText())
+						.onClick(() => {
+							void this.pasteWithoutBlankLines(editor);
+						});
+				});
+			})
+		);
+
+		// Command / Remove Blank Lines / Paste
+		this.addCommand({
+			id: "paste-without-blank-lines",
+			name: "Paste without blank lines",
+			editorCallback: (editor) => {
+				void this.pasteWithoutBlankLines(editor);
+			},
+		});
+
+		// Command  / Remove Blank Lines  / Selection
+		this.addCommand({
+			id: "remove-blank-lines-from-selection",
+			name: "Remove blank lines from selection",
+			editorCheckCallback: (checking, editor, ctx) => {
+				if (editor.somethingSelected()) {
+					if (!checking) {
+						this.removeBlankLinesFromSelection(editor);
+					}
+					return true;
+				}
+				return false;
+			},
+		});
 
 		this.addSettingTab(new RemoveNewlineSettingsTab(this.app, this));
 	}
@@ -112,6 +164,17 @@ export default class RemoveNewline extends Plugin {
 		return text;
 	}
 
+	removeBlankLines = (text: string): string => {
+
+		text = text.replace(/(\r\n|\r|\n){2,}/g, "\r\n");
+
+		// if (this.settings.fixWhitespace) {
+		// 	text = text.replace(/\s{2,}/g, " ");
+		// }
+
+		return text;
+	}
+
 	removeNewlinesFromSelection = (editor: Editor): void =>  {
 		let selection = editor.getSelection();
 
@@ -124,6 +187,22 @@ export default class RemoveNewline extends Plugin {
 		let selection = await navigator.clipboard.readText();
 
 		selection = this.removeNewlines(selection);
+
+		editor.replaceSelection(selection);
+	}
+
+	removeBlankLinesFromSelection = (editor: Editor): void =>  {
+		let selection = editor.getSelection();
+
+		selection = this.removeBlankLines(selection);
+
+		editor.replaceSelection(selection);
+	}
+
+	pasteWithoutBlankLines = async (editor: Editor): Promise<void> => {
+		let selection = await navigator.clipboard.readText();
+
+		selection = this.removeBlankLines(selection);
 
 		editor.replaceSelection(selection);
 	}
@@ -143,7 +222,7 @@ class RemoveNewlineSettingsTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName("Fix whitespace")
+			.setName("Fix whitespace when removing newlines")
 			.setDesc(
 				"Remove two or more whitespace characters in a row from the selection after removing the newlines. (Recommended)"
 			)
@@ -157,7 +236,7 @@ class RemoveNewlineSettingsTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Fix hyphenation")
+			.setName("Fix hyphenation when removing newlines")
 			.setDesc(
 				"If on, removes hyphens from the end of a line and also does not put a space where the newline was."
 			)
