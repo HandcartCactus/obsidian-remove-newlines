@@ -71,4 +71,8 @@ If you encounter any issues, please report them on the [issue tracker](https://g
 If you'd like to request a feature or have an idea for a new feature, please use the GitHub [issue tracker](https://github.com/HandcartCactus/obsidian-remove-newlines/issues/new?assignees=HandcartCactus&labels=enhancement&projects=&template=feature_request.md&title=%5BFEATURE%5D).
 
 ## Inspection
-All relevant source code can be found in [`main.ts`](https://github.com/HandcartCactus/obsidian-remove-newlines/blob/main/main.ts).
+All relevant source code can be found in [`main.ts`](https://github.com/HandcartCactus/obsidian-remove-newlines/blob/main/main.ts). To compile yourself from source:
+1. clone this repo
+2. `cd` to the project folder
+3. run `npm run dev` or `npm run build`
+4. perform a manual install
