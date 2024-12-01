@@ -5,6 +5,9 @@ on:
     - cron: '0 0 * * *'  # Runs once a day at midnight
   workflow_dispatch:  # Allows manual triggering
 
+permissions:
+  contents: write
+
 jobs:
   update-stats:
     runs-on: ubuntu-latest
@@ -34,4 +37,4 @@ jobs:
         git commit -m "Update repo_stats.csv"
         git push
       env:
-        GITHUB_TOKEN: ${{ secrets.STATS_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
