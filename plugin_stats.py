@@ -6,6 +6,9 @@ import os
 import pandas as pd
 # import matplotlib.pyplot as plt
 
+if not os.getenv("STATS_READ_TOKEN"):
+    raise ValueError("GitHub token is not set in the environment.")
+
 g = Github(
     os.getenv("STATS_READ_TOKEN")
 )
