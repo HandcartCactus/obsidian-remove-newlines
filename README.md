@@ -78,4 +78,4 @@ All relevant source code can be found in [`main.ts`](https://github.com/Handcart
 4. perform a manual install
 
 ## Plugin Stats
-[plugin_stats_viewer.html](https://handcartcactus.github.io/obsidian-remove-newlines/plugin_stats_viewer.html)
+[View Plugin Statistics](https://handcartcactus.github.io/obsidian-remove-newlines/plugin_stats_viewer.html)
