@@ -23,6 +23,8 @@ jobs:
 
     - name: Run plugin_stats.py
       run: python plugin_stats.py
+      env:
+        STATS_READ_TOKEN: ${{secrets.STATS_READ_TOKEN}}
 
     - name: Commit and push changes
       uses: stefanzweifel/git-auto-commit-action@v4
