@@ -4,9 +4,7 @@ from datetime import datetime, timezone
 from statistics import mean, median
 import os
 import pandas as pd
-import matplotlib
-import matplotlib.pyplot as plt
-import numpy as np
+# import matplotlib.pyplot as plt
 
 g = Github(
     os.getenv("GITHUB_STATS_READ_TOKEN")
@@ -133,12 +131,12 @@ else:
 df["data_as_of"] = pd.to_datetime(df["data_as_of"])
 df.to_csv(filename, index=False)
 
-print(df)
-print(df.info())
-print(df.describe())
-df.plot.line("data_as_of", "total_downloads")
-plt.title("Total Downloads Over Time")
-plt.xlabel("Time")
-plt.ylabel("Total Downloads")
-plt.tight_layout()
-plt.savefig("total_downloads_over_time.png")
+# print(df)
+# print(df.info())
+# print(df.describe())
+# df.plot.line("data_as_of", "total_downloads")
+# plt.title("Total Downloads Over Time")
+# plt.xlabel("Time")
+# plt.ylabel("Total Downloads")
+# plt.tight_layout()
+# plt.savefig("total_downloads_over_time.png")
