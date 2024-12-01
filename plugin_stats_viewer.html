@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>D3 Dynamic Line Plot</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      .axis text {
+        font: 12px sans-serif;
+      }
+      .tooltip {
+        position: absolute;
+        text-align: center;
+        padding: 5px;
+        font: 12px sans-serif;
+        background: lightsteelblue;
+        border: 1px solid gray;
+        border-radius: 3px;
+        pointer-events: none;
+      }
+      .centered {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="plotContainer" class="centered"></div>
+    <div class="centered">
+      <select id="valueSelector"></select>
+    </div>
+    <script>
+      const csvUrl =
+        "https://raw.githubusercontent.com/HandcartCactus/obsidian-remove-newlines/refs/heads/main/repo_metrics.csv";
+      const defaultValue = "total_downloads";
+      const numericalColumns = [
+        "stargazers_count",
+        "closed_issues",
+        "open_issues",
+        "closure_rate",
+        "median_closure_seconds",
+        "average_time_between_releases_seconds",
+        "seconds_since_last_release",
+        "current_release_downloads",
+        "max_release_downloads",
+        "total_downloads",
+        "est_users_non_current_release",
+        "unique_views",
+      ];
+
+      const columnFriendlyNames = {
+        data_as_of: "Data As Of",
+        latest_release: "Latest Release",
+        stargazers_count: "Stargazers Count",
+        closed_issues: "Closed Issues",
+        open_issues: "Open Issues",
+        closure_rate: "Closure Rate",
+        median_closure_seconds: "Median Issue Cycle Time (Seconds)",
+        average_time_between_releases_seconds:
+          "Average Time Between Releases (Seconds)",
+        seconds_since_last_release: "Seconds Since Last Release",
+        current_release_downloads: "Current Release Downloads",
+        max_release_downloads: "Max Release Downloads",
+        total_downloads: "Total Downloads",
+        est_users_non_current_release:
+          "Estimated Users On Non-Current Releases",
+        unique_views: "Unique Views",
+        release_downloads: "All Release Downloads (JSON)",
+        top_referrers: "Top Referrers (JSON)",
+      };
+
+      d3.csv(csvUrl, d3.autoType).then((data) => {
+        data.forEach((d) => {
+          d.timestamp = new Date(d.data_as_of);
+        });
+
+        console.log(data);
+
+        const margins = { top: 40, right: 20, bottom: 30, left: 50 };
+        const width = 800 - margins.left - margins.right;
+        const height = 400 - margins.top - margins.bottom;
+
+        const svg = d3
+          .select("#plotContainer")
+          .append("svg")
+          .attr("width", width + margins.left + margins.right)
+          .attr("height", height + margins.top + margins.bottom)
+          .append("g")
+          .attr("transform", `translate(${margins.left},${margins.top})`);
+
+        const title = svg
+          .append("text")
+          .attr("x", width / 2)
+          .attr("y", -margins.top / 2)
+          .attr("text-anchor", "middle")
+          .style("font-size", "16px")
+          .style("font-family", "sans-serif");
+
+        const x = d3
+          .scaleTime()
+          .domain(d3.extent(data, (d) => d.timestamp))
+          .range([0, width]);
+
+        const y = d3.scaleLinear().range([height, 0]);
+
+        svg
+          .append("g")
+          .attr("transform", `translate(0,${height})`)
+          .attr("class", "x-axis");
+
+        svg.append("g").attr("class", "y-axis");
+
+        const line = d3
+          .line()
+          .x((d) => x(d.timestamp))
+          .y((d) => y(d[defaultValue]));
+
+        const tooltip = d3
+          .select("body")
+          .append("div")
+          .attr("class", "tooltip")
+          .style("opacity", 0);
+
+        const drawChart = (selectedValue) => {
+          y.domain([0, d3.max(data, (d) => d[selectedValue])]);
+          line.y((d) => y(d[selectedValue]));
+
+          svg.selectAll("path.line").remove();
+          svg
+            .append("path")
+            .datum(data)
+            .attr("class", "line")
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-width", 1.5)
+            .attr("d", line);
+
+          svg
+            .selectAll("g.x-axis")
+            .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%Y-%m-%d")));
+          svg.selectAll("g.y-axis").call(d3.axisLeft(y));
+
+          svg.selectAll("circle").remove();
+          svg
+            .selectAll("dot")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("cx", (d) => x(d.timestamp))
+            .attr("cy", (d) => y(d[selectedValue]))
+            .attr("r", (d) => 5)
+            .attr("fill", "steelblue")
+            .on("mouseover", function (event, d) {
+              tooltip.transition().duration(200).style("opacity", 0.9);
+              tooltip.html(
+                `Date: ${d3.timeFormat("%Y-%m-%d")(
+                  d.timestamp
+                )}<br/>${selectedValue}: ${d[selectedValue]}`
+              );
+              tooltip
+                .style("left", `${event.pageX + 5}px`)
+                .style("top", `${event.pageY - 28}px`);
+            })
+            .on("mouseout", function () {
+              tooltip.transition().duration(500).style("opacity", 0);
+            });
+
+          title.text(`Line Plot of ${columnFriendlyNames[selectedValue]}`);
+        };
+
+        const valueOptions = Object.keys(data[0]).filter((key) =>
+          numericalColumns.includes(key)
+        );
+        const selector = d3.select("#valueSelector");
+
+        selector
+          .selectAll("option")
+          .data(valueOptions)
+          .enter()
+          .append("option")
+          .text((d) => columnFriendlyNames[d])
+          .attr("value", (d) => d);
+
+        selector.property("value", defaultValue);
+
+        selector.on("change", function () {
+          drawChart(this.value);
+        });
+        drawChart(defaultValue);
+      });
+    </script>
+  </body>
+</html>
