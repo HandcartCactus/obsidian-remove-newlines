@@ -52,23 +52,23 @@
 
       const columnFriendlyNames = {
         data_as_of: "Data As Of",
-        latest_release: "Latest Release",
-        stargazers_count: "Stargazers Count",
+        latest_release: "Latest Release Version",
+        stargazers_count: "Number of Repo Stars",
         closed_issues: "Closed Issues",
         open_issues: "Open Issues",
-        closure_rate: "Closure Rate",
-        median_closure_seconds: "Median Issue Cycle Time (Seconds)",
+        closure_rate: "Issue Closure Rate",
+        median_closure_seconds: "Median Issue Closure Time (Seconds)",
         average_time_between_releases_seconds:
           "Average Time Between Releases (Seconds)",
         seconds_since_last_release: "Seconds Since Last Release",
-        current_release_downloads: "Current Release Downloads",
-        max_release_downloads: "Max Release Downloads",
-        total_downloads: "Total Downloads",
+        current_release_downloads: "Number of Downloads of the Most Recent Release",
+        max_release_downloads: "Highest Number of Downloads on Any Release",
+        total_downloads: "Total Downloads (Across All Releases)",
         est_users_non_current_release:
-          "Estimated Users On Non-Current Releases",
-        unique_views: "Unique Views",
+          "Estimated Number of Users On Old Releases",
+        unique_views: "Unique Repo Views",
         release_downloads: "All Release Downloads (JSON)",
-        top_referrers: "Top Referrers (JSON)",
+        top_referrers: "Top Repo Referrers (JSON)",
       };
 
       d3.csv(csvUrl, d3.autoType).then((data) => {
