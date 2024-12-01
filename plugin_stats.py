@@ -7,7 +7,7 @@ import pandas as pd
 # import matplotlib.pyplot as plt
 
 g = Github(
-    os.getenv("GITHUB_STATS_READ_TOKEN")
+    os.getenv("STATS_READ_TOKEN")
 )
 repo = g.get_repo("HandcartCactus/obsidian-remove-newlines")
 
@@ -140,3 +140,4 @@ df.to_csv(filename, index=False)
 # plt.ylabel("Total Downloads")
 # plt.tight_layout()
 # plt.savefig("total_downloads_over_time.png")
+
