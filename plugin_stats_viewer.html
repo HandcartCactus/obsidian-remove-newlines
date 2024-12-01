@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Remove Newlines Dynamic Stats</title>
+    <title>D3 Dynamic Line Plot</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
       .axis text {
@@ -27,7 +27,6 @@
     </style>
   </head>
   <body>
-	<h1>Remove Newlines Plugin Stats</h1>
     <div id="plotContainer" class="centered"></div>
     <div class="centered">
       <select id="valueSelector"></select>
@@ -41,9 +40,9 @@
         "closed_issues",
         "open_issues",
         "closure_rate",
-        "median_closure_seconds",
-        "average_time_between_releases_seconds",
-        "seconds_since_last_release",
+        "median_closure_days",
+        "average_time_between_releases_days",
+        "days_since_last_release",
         "current_release_downloads",
         "max_release_downloads",
         "total_downloads",
@@ -53,28 +52,31 @@
 
       const columnFriendlyNames = {
         data_as_of: "Data As Of",
-        latest_release: "Latest Release Version",
-        stargazers_count: "Number of Repo Stars",
+        latest_release: "Latest Release",
+        stargazers_count: "Stargazers Count",
         closed_issues: "Closed Issues",
         open_issues: "Open Issues",
-        closure_rate: "Issue Closure Rate",
-        median_closure_seconds: "Median Issue Closure Time (Seconds)",
-        average_time_between_releases_seconds:
-          "Average Time Between Releases (Seconds)",
-        seconds_since_last_release: "Seconds Since Last Release",
-        current_release_downloads: "Number of Downloads of the Most Recent Release",
-        max_release_downloads: "Highest Number of Downloads on Any Release",
-        total_downloads: "Total Downloads (Across All Releases)",
+        closure_rate: "Closure Rate",
+        median_closure_days: "Median Issue Cycle Time (Days)",
+        average_time_between_releases_days:
+          "Average Time Between Releases (Days)",
+        days_since_last_release: "Days Since Last Release",
+        current_release_downloads: "Current Release Downloads",
+        max_release_downloads: "Max Release Downloads",
+        total_downloads: "Total Downloads",
         est_users_non_current_release:
-          "Estimated Number of Users On Old Releases",
-        unique_views: "Unique Repo Views",
+          "Estimated Users On Non-Current Releases",
+        unique_views: "Unique Views",
         release_downloads: "All Release Downloads (JSON)",
-        top_referrers: "Top Repo Referrers (JSON)",
+        top_referrers: "Top Referrers (JSON)",
       };
 
       d3.csv(csvUrl, d3.autoType).then((data) => {
         data.forEach((d) => {
           d.timestamp = new Date(d.data_as_of);
+          d.median_closure_days = Math.round(10*d.median_closure_seconds/(60*60*24))/10;
+          d.average_time_between_releases_days = Math.round(10*d.average_time_between_releases_seconds/(60*60*24))/10;
+          d.days_since_last_release = Math.round(10*d.seconds_since_last_release/(60*60*24))/10;
         });
 
         console.log(data);
