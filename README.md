@@ -76,3 +76,6 @@ All relevant source code can be found in [`main.ts`](https://github.com/Handcart
 2. `cd` to the project folder
 3. run `npm run dev` or `npm run build`
 4. perform a manual install
+
+## Plugin Stats
+[Plugin Stats](plugin_stats_viewer.html)
