@@ -104,7 +104,7 @@ def scale_interval(seconds):
     return "0 seconds"
 
 
-filename = "repo_metrics.csv"
+filename = "repo_stats.csv"
 
 metrics = {
     "data_as_of": datetime.now(timezone.utc),
