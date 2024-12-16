@@ -1,285 +1,396 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Remove Newlines Plugin Statistics</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-      background-color: #f0f0f0;
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    .axis text {
-      font: 12px sans-serif;
-    }
-    .tooltip {
-      position: absolute;
-      text-align: center;
-      padding: 5px;
-      font: 12px sans-serif;
-      background: lightsteelblue;
-      border: 1px solid gray;
-      border-radius: 3px;
-      pointer-events: none;
-      display: none;
-    }
-    .centered {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-    }
-    .gauge-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 320px;
-      padding: 20px;
-      background-color: #fff;
-      border-radius: 15px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      position: relative;
-    }
-    .gauge-title {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-    .gauge-description {
-      font-size: 14px;
-      color: #666;
-      margin-top: 15px;
-      text-align: center;
-    }
-    .gauges {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 40px;
-    }
-    .gauge-tooltip {
-      position: absolute;
-      background-color: rgba(0, 0, 0, 0.7);
-      color: #fff;
-      padding: 8px;
-      border-radius: 5px;
-      font-size: 14px;
-      pointer-events: none;
-      display: none;
-    }
-  </style>
-</head>
-<body>
-    <div class="centered">
-        <select id="valueSelector"></select>
-    </div>
-    <div id="plotContainer" class="centered"></div>
-  
-
-  <!-- Gauges Section -->
-  <div class="gauges">
-    <div class="gauge-container" id="gauge1">
-      <div class="gauge-title">Current Release Non-Adoption</div>
-      <svg width="300" height="200"></svg>
-      <div class="gauge-description">Estimated percentage of all-time users without a current release.</div>
-      <div class="gauge-tooltip"></div>
-    </div>
-
-    <div class="gauge-container" id="gauge2">
-      <div class="gauge-title">Open Issues</div>
-      <svg width="300" height="200"></svg>
-      <div class="gauge-description">Percent of issues that are open.</div>
-      <div class="gauge-tooltip"></div>
-    </div>
-  </div>
-
-  <script>
-    // Line Plot Code
-    const csvUrl =
-      "https://raw.githubusercontent.com/HandcartCactus/obsidian-remove-newlines/refs/heads/main/repo_stats.csv";
-    const defaultValue = "total_downloads";
-    const numericalColumns = [
-      "stargazers_count",
-      "closed_issues",
-      "open_issues",
-      "closure_rate",
-      "median_closure_days",
-      "average_time_between_releases_days",
-      "days_since_last_release",
-      "current_release_downloads",
-      "max_release_downloads",
-      "total_downloads",
-      "est_users_non_current_release",
-      "unique_views",
-    ];
-
-    const columnFriendlyNames = {
-      stargazers_count: "Stargazers Count",
-      closed_issues: "Closed Issues",
-      open_issues: "Open Issues",
-      closure_rate: "Closure Rate",
-      median_closure_days: "Median Issue Cycle Time (Days)",
-      average_time_between_releases_days: "Average Time Between Releases (Days)",
-      days_since_last_release: "Days Since Last Release",
-      current_release_downloads: "Current Release Downloads",
-      max_release_downloads: "Max Release Downloads",
-      total_downloads: "Total Downloads",
-      est_users_non_current_release: "Estimated Users On Non-Current Releases",
-      unique_views: "Unique Views",
-    };
-
-    d3.csv(csvUrl, d3.autoType).then((data) => {
-      data.forEach((d) => {
-        d.timestamp = new Date(d.data_as_of);
-        d.median_closure_days = Math.round(10 * d.median_closure_seconds / (60 * 60 * 24)) / 10;
-        d.average_time_between_releases_days = Math.round(10 * d.average_time_between_releases_seconds / (60 * 60 * 24)) / 10;
-        d.days_since_last_release = Math.round(10 * d.seconds_since_last_release / (60 * 60 * 24)) / 10;
-
-      });
-
-      const margins = { top: 40, right: 20, bottom: 30, left: 50 };
-      const width = 800 - margins.left - margins.right;
-      const height = 400 - margins.top - margins.bottom;
-
-      const svg = d3.select("#plotContainer")
-        .append("svg")
-        .attr("width", width + margins.left + margins.right)
-        .attr("height", height + margins.top + margins.bottom)
-        .append("g")
-        .attr("transform", `translate(${margins.left},${margins.top})`);
-    
-
-      const x = d3.scaleTime().range([0, width]);
-      const y = d3.scaleLinear().range([height, 0]);
-
-      const line = d3.line().x(d => x(d.timestamp)).y(d => y(d[defaultValue]));
-
-      const tooltip = d3.select("body").append("div").attr("class", "tooltip");
-
-      function drawChart(selectedValue) {
-        y.domain([0, d3.max(data, d => d[selectedValue])]);
-        x.domain(d3.extent(data, d => d.timestamp));
-
-        svg.selectAll("*").remove();
-
-        svg.append("g")
-          .attr("transform", `translate(0,${height})`)
-          .call(d3.axisBottom(x));
-
-        svg.append("g").call(d3.axisLeft(y));
-
-        svg.append("path")
-          .datum(data)
-          .attr("fill", "none")
-          .attr("stroke", "steelblue")
-          .attr("stroke-width", 1.5)
-          .attr("d", line.y(d => y(d[selectedValue])));
-
-        svg.selectAll("dot")
-          .data(data)
-          .enter()
-          .append("circle")
-          .attr("cx", d => x(d.timestamp))
-          .attr("cy", d => y(d[selectedValue]))
-          .attr("r", 5)
-          .attr("fill", "steelblue")
-          .on("mouseover", function(event, d) {
-            tooltip.style("display", "block")
-              .html(`Date: ${d3.timeFormat("%Y-%m-%d")(d.timestamp)}<br>${selectedValue}: ${d[selectedValue]}`)
-              .style("left", `${event.pageX + 10}px`)
-              .style("top", `${event.pageY - 20}px`);
-          })
-          .on("mouseout", () => tooltip.style("display", "none"));
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Remove Newlines Plugin Statistics</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        background-color: #f0f0f0;
+        font-family: Arial, sans-serif;
+        padding: 2px;
+      }
+      .axis text {
+        font: 12px sans-serif;
+      }
+      .tooltip {
+        position: absolute;
+        text-align: center;
+        padding: 5px;
+        font: 12px sans-serif;
+        background: lightsteelblue;
+        border: 1px solid gray;
+        border-radius: 3px;
+        pointer-events: none;
+        display: none;
+      }
+      .centered {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
+      .gauge-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 320px;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        position: relative;
       }
 
-      d3.select("#valueSelector")
-        .selectAll("option")
-        .data(numericalColumns)
-        .enter()
-        .append("option")
-        .text(d => columnFriendlyNames[d])
-        .attr("value", d => d)
-        .attr("selected", d => d==defaultValue?true:null);
+      .gauge-container p {
+        font-size: 48px;
+      }
 
-      d3.select("#valueSelector").on("change", function() {
-        drawChart(this.value);
-      });
+      .gauge-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .gauge-description {
+        font-size: 14px;
+        color: #666;
+        margin-top: 15px;
+        text-align: center;
+      }
+      .gauges {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 40px;
+      }
+      .gauge-tooltip {
+        position: absolute;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        padding: 8px;
+        border-radius: 5px;
+        font-size: 14px;
+        pointer-events: none;
+        display: none;
+      }
+      .linebox {
+        padding: 1px;
+        margin-top: 20px;
+        margin-left: 5px;
+        margin-right: 5px;
+        background-color: #fff;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Remove Newlines</h1>
+    <div class="linebox">
+      <div class="centered">
+        <select id="valueSelector"></select>
+      </div>
+      <div id="plotContainer" class="centered"></div>
+    </div>
 
-      function createGauge(containerId, minValue, maxValue, currentValue) {
-        const width = 300, height = 200;
-        const svg = d3.select(`#${containerId} svg`).html("").attr("viewBox", `0 0 ${width} ${height}`);
-        const radius = Math.min(width, height) / 2;
-        const centerX = width / 2, centerY = height;
+    <!-- Gauges Section -->
+    <div class="gauges">
+      <div class="gauge-container" id="TotalDownload">
+        <div class="gauge-title">Total Downloads</div>
+        <p></p>
+        <div class="gauge-description">
+          Total downloads across all releases.
+        </div>
+      </div>
+      <div class="gauge-container" id="CurrentReleaseDownloads">
+        <div class="gauge-title">Current Release Downloads</div>
+        <p></p>
+        <div class="gauge-description">
+          Total downloads of the current release.
+        </div>
+      </div>
+      <div class="gauge-container" id="gauge1">
+        <div class="gauge-title">Current Release Non-Adoption</div>
+        <svg width="300" height="200"></svg>
+        <div class="gauge-description">
+          Estimated percentage of all-time devices without a current release.
+        </div>
+        <div class="gauge-tooltip"></div>
+      </div>
 
-        const scale = d3.scaleLinear().domain([minValue, maxValue]).range([-Math.PI * 0.5, Math.PI * 0.5]);
+      <div class="gauge-container" id="gauge2">
+        <div class="gauge-title">Open Issues</div>
+        <svg width="300" height="200"></svg>
+        <div class="gauge-description">Percent of issues that are open.</div>
+        <div class="gauge-tooltip"></div>
+      </div>
+    </div>
 
-        const tooltip = d3.select(`#${containerId} .gauge-tooltip`);
+    <script>
+      // Line Plot Code
+      const csvUrl =
+        "https://raw.githubusercontent.com/HandcartCactus/obsidian-remove-newlines/refs/heads/main/repo_stats.csv";
+      const defaultValue = "total_downloads";
+      const numericalColumns = [
+        "stargazers_count",
+        "closed_issues",
+        "open_issues",
+        "closure_rate",
+        "median_closure_days",
+        "average_time_between_releases_days",
+        "days_since_last_release",
+        "current_release_downloads",
+        "max_release_downloads",
+        "total_downloads",
+        "est_users_non_current_release",
+        "unique_views",
+      ];
 
-        function getColor(value) {
-            const threshold = (maxValue - minValue) / 3;
-            if (value <= minValue + threshold) return 'green';
-            if (value <= minValue + 2 * threshold) return 'yellow';
-            return 'red';
+      const columnFriendlyNames = {
+        stargazers_count: "Stargazers Count",
+        closed_issues: "Closed Issues",
+        open_issues: "Open Issues",
+        closure_rate: "Closure Rate",
+        median_closure_days: "Median Issue Cycle Time (Days)",
+        average_time_between_releases_days:
+          "Average Time Between Releases (Days)",
+        days_since_last_release: "Days Since Last Release",
+        current_release_downloads: "Current Release Downloads",
+        max_release_downloads: "Max Release Downloads",
+        total_downloads: "Total Downloads",
+        est_users_non_current_release:
+          "Estimated Devices On Non-Current Releases",
+        unique_views: "Unique Views",
+      };
+
+      d3.csv(csvUrl, d3.autoType).then((data) => {
+        data.forEach((d) => {
+          d.timestamp = new Date(d.data_as_of);
+          d.median_closure_days =
+            Math.round((10 * d.median_closure_seconds) / (60 * 60 * 24)) / 10;
+          d.average_time_between_releases_days =
+            Math.round(
+              (10 * d.average_time_between_releases_seconds) / (60 * 60 * 24)
+            ) / 10;
+          d.days_since_last_release =
+            Math.round((10 * d.seconds_since_last_release) / (60 * 60 * 24)) /
+            10;
+        });
+
+        const margins = { top: 10, right: 40, bottom: 30, left: 60 };
+        //const width = 600 - margins.left - margins.right;
+        const width = Math.min(
+          600,
+          window.innerWidth - margins.left - margins.right
+        );
+        const height = 300 - margins.top - margins.bottom;
+
+        window.addEventListener("resize", () => {
+          const newWidth = Math.min(
+            600,
+            window.innerWidth - margins.left - margins.right
+          );
+          d3.select("#plotContainer svg").attr(
+            "width",
+            newWidth + margins.left + margins.right
+          );
+          x.range([0, newWidth]);
+          drawChart(d3.select("#valueSelector").property("value"));
+        });
+
+        const svg = d3
+          .select("#plotContainer")
+          .append("svg")
+          .attr("width", width + margins.left + margins.right)
+          .attr("height", height + margins.top + margins.bottom)
+          .append("g")
+          .attr("transform", `translate(${margins.left},${margins.top})`);
+
+        const x = d3.scaleTime().range([0, width]);
+        const y = d3.scaleLinear().range([height, 0]);
+
+        const line = d3
+          .line()
+          .x((d) => x(d.timestamp))
+          .y((d) => y(d[defaultValue]));
+
+        const tooltip = d3
+          .select("body")
+          .append("div")
+          .attr("class", "tooltip");
+
+        function drawChart(selectedValue) {
+          y.domain([0, d3.max(data, (d) => d[selectedValue])]);
+          x.domain(d3.extent(data, (d) => d.timestamp));
+
+          svg.selectAll("*").remove();
+
+          svg
+            .append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x));
+
+          svg.append("g").call(d3.axisLeft(y));
+
+          svg
+            .append("path")
+            .datum(data)
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-width", 1.5)
+            .attr(
+              "d",
+              line.y((d) => y(d[selectedValue]))
+            );
+
+          svg
+            .selectAll("dot")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("cx", (d) => x(d.timestamp))
+            .attr("cy", (d) => y(d[selectedValue]))
+            .attr("r", 5)
+            .attr("fill", "steelblue")
+            .on("mouseover", function (event, d) {
+              tooltip
+                .style("display", "block")
+                .html(
+                  `Date: ${d3.timeFormat("%Y-%m-%d")(
+                    d.timestamp
+                  )}<br>${selectedValue}: ${d[selectedValue]}`
+                )
+                .style("left", `${event.pageX + 10}px`)
+                .style("top", `${event.pageY - 20}px`);
+            })
+            .on("mouseout", () => tooltip.style("display", "none"));
         }
 
-        svg.append("path")
-            .attr("d", d3.arc()
-            .innerRadius(radius - 20)
-            .outerRadius(radius)
-            .startAngle(scale(minValue))
-            .endAngle(scale(maxValue)))
+        d3.select("#valueSelector")
+          .selectAll("option")
+          .data(numericalColumns)
+          .enter()
+          .append("option")
+          .text((d) => columnFriendlyNames[d])
+          .attr("value", (d) => d)
+          .attr("selected", (d) => (d == defaultValue ? true : null));
+
+        d3.select("#valueSelector").on("change", function () {
+          drawChart(this.value);
+        });
+
+        function createGauge(containerId, minValue, maxValue, currentValue) {
+          const width = 300,
+            height = 200;
+          const svg = d3
+            .select(`#${containerId} svg`)
+            .html("")
+            .attr("viewBox", `0 0 ${width} ${height}`);
+          const radius = Math.min(width, height) / 2;
+          const centerX = width / 2,
+            centerY = height;
+
+          const scale = d3
+            .scaleLinear()
+            .domain([minValue, maxValue])
+            .range([-Math.PI * 0.5, Math.PI * 0.5]);
+
+          const tooltip = d3.select(`#${containerId} .gauge-tooltip`);
+
+          function getColor(value) {
+            const threshold = (maxValue - minValue) / 3;
+            if (value <= minValue + threshold) return "green";
+            if (value <= minValue + 2 * threshold) return "yellow";
+            return "red";
+          }
+
+          svg
+            .append("path")
+            .attr(
+              "d",
+              d3
+                .arc()
+                .innerRadius(radius - 20)
+                .outerRadius(radius)
+                .startAngle(scale(minValue))
+                .endAngle(scale(maxValue))
+            )
             .attr("fill", "#ddd")
             .attr("transform", `translate(${centerX},${centerY})`);
 
-        const gaugeArc = svg.append("path")
-            .attr("d", d3.arc()
-            .innerRadius(radius - 20)
-            .outerRadius(radius)
-            .startAngle(scale(minValue))
-            .endAngle(scale(currentValue)))
+          const gaugeArc = svg
+            .append("path")
+            .attr(
+              "d",
+              d3
+                .arc()
+                .innerRadius(radius - 20)
+                .outerRadius(radius)
+                .startAngle(scale(minValue))
+                .endAngle(scale(currentValue))
+            )
             .attr("fill", getColor(currentValue))
             .attr("transform", `translate(${centerX},${centerY})`);
 
-        svg.append("text")
+          svg
+            .append("text")
             .attr("x", centerX)
             .attr("y", centerY - 30)
             .attr("text-anchor", "middle")
             .attr("font-size", "32px")
             .attr("font-weight", "bold")
             .attr("fill", "#333")
-            .text(`${Math.round(100 * (currentValue - minValue) / (maxValue - minValue))}%`);
+            .text(
+              `${Math.round(
+                (100 * (currentValue - minValue)) / (maxValue - minValue)
+              )}%`
+            );
 
-        // Hover behavior
-        gaugeArc.on("mouseover", () => {
-            tooltip.style("display", "block")
-                .html(`Current Value: ${currentValue}<br>Min: ${minValue}<br>Max: ${maxValue}`);
-        });
+          // Hover behavior
+          gaugeArc.on("mouseover", () => {
+            tooltip
+              .style("display", "block")
+              .html(
+                `Current Value: ${currentValue}<br>Min: ${minValue}<br>Max: ${maxValue}`
+              );
+          });
 
-        gaugeArc.on("mousemove", (event) => {
-            tooltip.style("left", `${event.offsetX + 10}px`)
-                .style("top", `${event.offsetY - 20}px`);
-        });
+          gaugeArc.on("mousemove", (event) => {
+            tooltip
+              .style("left", `${event.offsetX + 10}px`)
+              .style("top", `${event.offsetY - 20}px`);
+          });
 
-        gaugeArc.on("mouseout", () => {
+          gaugeArc.on("mouseout", () => {
             tooltip.style("display", "none");
-        });
-    }
+          });
+        }
 
-
-
-      drawChart(defaultValue);
-      const recentData = data[data.length-1]
-      createGauge("gauge1", 0, recentData.max_release_downloads, recentData.est_users_non_current_release);
-      createGauge("gauge2", 0, recentData.closed_issues + recentData.open_issues, recentData.open_issues);
-    });
-  </script>
-
-</body>
+        drawChart(defaultValue);
+        const recentData = data[data.length - 1];
+        createGauge(
+          "gauge1",
+          0,
+          recentData.max_release_downloads,
+          recentData.est_users_non_current_release
+        );
+        createGauge(
+          "gauge2",
+          0,
+          recentData.closed_issues + recentData.open_issues,
+          recentData.open_issues
+        );
+        d3.select("#TotalDownload p").text(recentData.total_downloads);
+        d3.select("#CurrentReleaseDownloads p").text(
+          recentData.current_release_downloads
+        );
+      });
+    </script>
+  </body>
 </html>
