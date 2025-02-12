@@ -187,8 +187,8 @@
 		      d.daily_downloads = d.total_downloads - arr[i - 1].total_downloads;
 		      d.daily_current_release_downloads = d.current_release_downloads - arr[i - 1].current_release_downloads;
 		    } else {
-		      d.daily_download_diff = 0;
-		      d.daily_release_download_diff = 0;
+		      d.daily_downloads = 0;
+		      d.daily_current_release_downloads = 0;
 		    }
 		  });
 		});
