@@ -131,6 +131,13 @@
         <div class="gauge-tooltip"></div>
       </div>
     </div>
+	  <div class="gauge-container" id="AvgDailyDown">
+			<div class="gauge-title">Average Daily Downloads</div>
+			<p></p>
+			<div class="gauge-description">
+			  Total downloads across all releases.
+			</div>
+	  </div>
 
     <script>
       // Line Plot Code
@@ -171,7 +178,17 @@ const columnFriendlyNames = {
   unique_views: "Unique Views"
 };
 
+let avgDailyDown = 0;
+
+function meanOfLast30(list, key) {
+  const last30 = list.slice(-30);
+  const values = last30.map(item => item[key]).filter(value => typeof value === 'number');
+  const sum = values.reduce((a, b) => a + b, 0);
+  return values.length > 0 ? sum / values.length : 0;
+}
+
 d3.csv(csvUrl, d3.autoType).then((data) => {
+	
   data.forEach((d, i, arr) => {
     d.timestamp = new Date(d.data_as_of);
     d.median_closure_days =
@@ -187,8 +204,10 @@ d3.csv(csvUrl, d3.autoType).then((data) => {
     } else {
       d.daily_downloads = 0;
       d.daily_current_release_downloads = 0;
-    }
+		}
   });
+	
+	avgDailyDown = Math.round(meanOfLast30(data, "daily_downloads"),1);
 
 
   const margins = { top: 10, right: 40, bottom: 30, left: 60 };
@@ -398,6 +417,7 @@ d3.csv(csvUrl, d3.autoType).then((data) => {
   d3.select("#CurrentReleaseDownloads p").text(
     recentData.current_release_downloads
   );
+	d3.select("#AvgDailyDown p").text(avgDailyDown);
 });
     </script>
   </body>
