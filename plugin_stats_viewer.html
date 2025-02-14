@@ -134,7 +134,7 @@
 			<div class="gauge-title">Average Daily Downloads</div>
 			<p></p>
 			<div class="gauge-description">
-			  Average daily downloads across all releases.
+			  Average daily downloads across all releases in the last 30 days.
 			</div>
 	  </div>
     </div>
@@ -208,7 +208,7 @@ d3.csv(csvUrl, d3.autoType).then((data) => {
 		}
   });
 	
-	avgDailyDown = Math.round(10 * meanOfLast30(data, "daily_downloads"))/10;
+  avgDailyDown = Math.round(10 * meanOfLast30(data, "daily_downloads"))/10;
 
 
   const margins = { top: 10, right: 40, bottom: 30, left: 60 };
