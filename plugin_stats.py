@@ -86,7 +86,7 @@ est_users_non_current_release = max_release_downloads - current_release_download
 unique_views = 0
 try:
     print(traffic)
-    unique_views = traffic["uniques"]
+    unique_views = traffic.uniques
 except Exception as e:
     print(e) 
 
