@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="24px" height="24px" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <bx:export>
+      <bx:file format="pdf">
+        <bx:page/>
+      </bx:file>
+    </bx:export>
+  </defs>
+  <rect x="19.433" y="99.911" width="140.498" height="30.819" style=""/>
+  <rect x="20.864" y="212.093" width="140.498" height="30.819" style=""/>
+  <rect x="17.69" y="312.611" width="140.498" height="30.819" style=""/>
+  <rect x="326.271" y="166.429" width="140.498" height="30.819" style=""/>
+  <rect x="326.814" y="211.114" width="140.498" height="30.819" style=""/>
+  <rect x="323.64" y="256.57" width="140.498" height="30.819" style=""/>
+  <rect x="45.238" y="59.976" width="104.229" height="16.533" style="" transform="matrix(-0.002264, -0.999997, 0.999997, -0.002369, 128.014847, 330.466339)"/>
+  <rect x="67.594" y="88.919" width="101.892" height="16.912" style="transform-origin: 118.541px 97.376px;" transform="matrix(0.999968, 0.007944, -0.007592, 0.999971, 119.92823, 91.970792)"/>
+  <rect x="45.051" y="59.765" width="104.228" height="16.533" style="" transform="matrix(0.001985, 0.999998, -0.999998, 0.002077, 348.726532, 135.272034)"/>
+  <rect x="67.594" y="88.919" width="101.892" height="16.912" style="transform-origin: 118.54px 97.376px;" transform="matrix(-0.999966, -0.008236, 0.007871, -0.999969, 119.902401, 178.797169)"/>
+  <rect x="220.926" y="172.285" width="36.439" height="35.906" style=""/>
+</svg>

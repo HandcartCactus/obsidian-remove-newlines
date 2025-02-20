@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" xmlns:bx="https://boxy-svg.com">
+  <rect width="24" height="24" fill="none"/>
+  <path d="M 2.006 2 L 10.03 2" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style=""/>
+  <path d="M 14.042 6.006 L 18.557 6.006 L 22.066 6.006" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style=""/>
+  <path d="M 14.042 2.012 L 22.066 2.012" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style=""/>
+  <path d="M 2.006 8 L 6.519 8 L 10.03 8" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style=""/>
+  <defs>
+    <bx:grid x="0" y="0" width="1.003" height="1"/>
+  </defs>
+  <path d="M 2.006 14 L 10.03 14" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style=""/>
+  <path d="M 14.042 10 L 22.066 10" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style=""/>
+  <path d="M 2.006 20 L 10.03 20" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style=""/>
+  <path d="M 14.042 14 L 22.066 14" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style=""/>
+</svg>

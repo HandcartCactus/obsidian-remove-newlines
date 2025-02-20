@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="24px" height="24px" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <bx:export>
+      <bx:file format="pdf">
+        <bx:page/>
+      </bx:file>
+    </bx:export>
+  </defs>
+  <rect x="19.433" y="99.911" width="140.498" height="30.819" style=""/>
+  <rect x="20.864" y="212.093" width="140.498" height="30.819" style=""/>
+  <rect x="17.69" y="312.611" width="140.498" height="30.819" style=""/>
+  <path d="M 243.098 269.533 H 277.358 L 258.308 231.558 L 350.554 278.235 L 258.308 324.913 L 277.358 286.938 H 243.098 V 269.533 Z" bx:shape="arrow 243.098 231.558 107.456 93.355 17.405 92.246 19.05 1@826690c5" style="" transform="matrix(0.792882, -0.609376, 0.536528, 0.848869, -135.873703, 167.731476)"/>
+  <rect x="326.271" y="166.429" width="140.498" height="30.819" style=""/>
+  <rect x="326.814" y="211.114" width="140.498" height="30.819" style=""/>
+  <rect x="323.64" y="256.57" width="140.498" height="30.819" style=""/>
+</svg>

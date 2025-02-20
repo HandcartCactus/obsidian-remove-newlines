@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <rect width="24" height="24" fill="none"/>
+  <path d="M 1.421 1.9 L 5.09 1.9" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style=""/>
+  <path d="M 1.421 4.622 L 5.09 4.622" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style=""/>
+  <path d="M 1.421 7.414 L 7.646 7.414" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform-box: fill-box; transform-origin: 37.6774% 0%;"/>
+  <path d="M 20.137 3.506 L 22.616 3.506" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style=""/>
+  <path d="M 15.94 5.74 L 22.616 5.74" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style=""/>
+  <path d="M 15.94 3.506 L 17.972 3.506" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform-origin: 16.706px 3.506px;"/>
+  <path d="M 5.867 10.178 L 17.919 10.178" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform-origin: 10.407px 10.178px;"/>
+  <path d="M 5.867 21.986 L 17.972 21.986" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform-origin: 10.427px 21.986px;"/>
+  <path d="M 1.422 14.623 L 13.23 14.623" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform-origin: 5.867px 14.623px;" transform="matrix(0, 1, -1, 0, 0.000001, 0.000001)"/>
+  <path d="M 7.135 14.995 L 14.297 17.475" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(0, 1, -1, 0, 0.000002, -0.000001)"/>
+  <path d="M 9.812 17.672 L 16.974 14.798" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(0, 1, -1, 0, 0.000001, 0)"/>
+  <path d="M 12.117 19.631 L 12.142 16.676" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(0, 1, -1, 0, 0.000001, 0)"/>
+  <path d="M 13.527 14.623 L 25.335 14.623" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform-origin: 17.972px 14.623px;" transform="matrix(0, 1, -1, 0, 0, -0.000001)"/>
+</svg>
