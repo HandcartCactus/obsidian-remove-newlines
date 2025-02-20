@@ -7,6 +7,8 @@ import {
 	Setting,
 } from "obsidian";
 
+import { removeNewlines, removeBlankLines } from "utils";
+
 interface RemoveNewlineSettings {
 	fixWhitespace: boolean;
 	fixHyphenation: boolean;
@@ -150,29 +152,11 @@ export default class RemoveNewline extends Plugin {
 	}
 
 	removeNewlines = (text: string): string => {
-		
-		if (this.settings.fixHyphenation) {
-			text = text.replace(/-(\r\n|\r|\n)/g, "");
-		}
-
-		text = text.replace(/(\r\n|\r|\n)/g, " ");
-
-		if (this.settings.fixWhitespace) {
-			text = text.replace(/\s{2,}/g, " ");
-		}
-
-		return text;
+		return removeNewlines(text, this.settings.fixHyphenation, this.settings.fixWhitespace);
 	}
 
 	removeBlankLines = (text: string): string => {
-
-		text = text.replace(/(\r\n|\r|\n){2,}/g, "\r\n");
-
-		// if (this.settings.fixWhitespace) {
-		// 	text = text.replace(/\s{2,}/g, " ");
-		// }
-
-		return text;
+		return removeBlankLines(text);
 	}
 
 	removeNewlinesFromSelection = (editor: Editor): void =>  {
