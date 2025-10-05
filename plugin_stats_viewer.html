@@ -284,7 +284,7 @@ d3.csv(csvUrl, d3.autoType).then((data) => {
       .append("circle")
       .attr("cx", (d) => x(d.timestamp))
       .attr("cy", (d) => y(d[selectedValue]))
-      .attr("r", 5)
+      .attr("r", 3)
       .attr("fill", "steelblue")
       .on("mouseover", function (event, d) {
         tooltip
