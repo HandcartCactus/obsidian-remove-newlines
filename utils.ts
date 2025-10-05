@@ -20,9 +20,11 @@ const removeNewlines = function(text: string, fixHyphenation:boolean, fixWhitesp
 }
 
 const removeBlankLines = function(text: string): string {
-        
-    text = text.replace(/(\r\n|\r|\n){2,}/g, "\r\n");
-
+    // text = text.replace(/[\r\n]+([\s]*[\r\n]+)+/g, "\r\n");
+    text = text
+    .split(/\r?\n/)
+    .filter(line => line.trim() !== "")
+    .join("\n");
     return text;
 }
 
