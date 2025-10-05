@@ -29,20 +29,44 @@ describe("removeNewlines", () => {
 
 describe("removeBlankLines", () => {
     test("removes multiple blank lines", () => {
-        const input = "Line 1\n\n\nLine 2\n\nLine 3";
-        const expected = "Line 1\nLine 2\nLine 3";
-        expect(removeBlankLines(input)).toBe(expected);
+        const input = "This is line 1\n\n\nAnother line (2)";
+        const expected = "This is line 1\nAnother line (2)";
+        const actual = removeBlankLines(input);
+        expect(actual).toBe(expected);
+    });
+
+    test("removes variable blank lines", () => {
+        const input = "This is line 1\n\n\nAnother line (2)\n\nA third and final line (3)";
+        const expected = "This is line 1\nAnother line (2)\nA third and final line (3)";
+        const actual = removeBlankLines(input);
+        expect(actual).toBe(expected);
     });
 
     test("handles text without blank lines", () => {
-        const input = "Line 1\nLine 2\nLine 3";
-        const expected = "Line 1\nLine 2\nLine 3";
-        expect(removeBlankLines(input)).toBe(expected);
+        const input = "This is line 1\nAnother line (2)\nA third and final line (3)";
+        const expected = "This is line 1\nAnother line (2)\nA third and final line (3)";
+        const actual = removeBlankLines(input);
+        expect(actual).toBe(expected);
     });
 
-    test("preserves single newlines", () => {
-        const input = "Line 1\n\nLine 2\n\n\nLine 3";
-        const expected = "Line 1\nLine 2\nLine 3";
-        expect(removeBlankLines(input)).toBe(expected);
+    test("tabulation doesnt break it", () => {
+        const input = "\tThis is line 1\n\t\n\tAnother line (2)\n\t\n\t\n\tA third and final line (3)";
+        const expected = "\tThis is line 1\n\tAnother line (2)\n\tA third and final line (3)";
+        const actual = removeBlankLines(input);
+        expect(actual).toBe(expected);
+    });
+
+    test("cleans up tables", () => {
+        const input = "| a | b |\n\n| - | - |\n\t\n| c | d |";
+        const expected = "| a | b |\n| - | - |\n| c | d |";
+        const actual = removeBlankLines(input);
+        expect(actual).toBe(expected);
+    });
+
+    test("cleans up tabbed tables", () => {
+        const input = "\t| a | b |\n\t\n\t| - | - |\n\t\t\n\t| c | d |";
+        const expected = "\t| a | b |\n\t| - | - |\n\t| c | d |";
+        const actual = removeBlankLines(input);
+        expect(actual).toBe(expected);
     });
 });
