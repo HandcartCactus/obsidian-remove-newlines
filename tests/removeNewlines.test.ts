@@ -56,6 +56,34 @@ describe("removeBlankLines", () => {
         expect(actual).toBe(expected);
     });
 
+    test("space tabulation doesnt break it", () => {
+        const input = "    This is line 1\n    \n    Another line (2)\n    \n    \n    A third and final line (3)";
+        const expected = "    This is line 1\n    Another line (2)\n    A third and final line (3)";
+        const actual = removeBlankLines(input);
+        expect(actual).toBe(expected);
+    });
+
+    test("space list tabulation doesnt break it", () => {
+        const input = " + This is line 1\n    \n + Another line (2)";
+        const expected = " + This is line 1\n + Another line (2)";
+        const actual = removeBlankLines(input);
+        expect(actual).toBe(expected);
+    });
+
+    test("space list tabulation doesnt break it 2", () => {
+        const input = "\n+ abc\n    \n+ def";
+        const expected = "+ abc\n+ def";
+        const actual = removeBlankLines(input);
+        expect(actual).toBe(expected);
+    });
+
+    test("space list tabulation doesnt break it 3", () => {
+        const input = "+ abc\n    \n+ def";
+        const expected = "+ abc\n+ def";
+        const actual = removeBlankLines(input);
+        expect(actual).toBe(expected);
+    });
+
     test("cleans up tables", () => {
         const input = "| a | b |\n\n| - | - |\n\t\n| c | d |";
         const expected = "| a | b |\n| - | - |\n| c | d |";
