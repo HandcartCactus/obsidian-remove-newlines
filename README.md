@@ -36,6 +36,10 @@ There are no hotkeys for these actions by default, but you can create them in th
 
 ## What's New?
 ### 1.0.5
+- Refactors core code and introduces testing
+- fixes the remove blank lines function to work even with tables and tabbed text 
+
+### 1.0.5
 - Added the ability to remove blank lines from the context menu and the command palette.
 
 ### 1.0.4
