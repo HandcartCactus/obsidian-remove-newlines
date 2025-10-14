@@ -48,7 +48,7 @@ There are no hotkeys for these actions by default, but you can create them in th
 
 ### 1.0.3
 - Added ability to remove newlines from text selection in the Obsidian editor.
-- Addeded ability to paste content without newlines into the Obsidian editor.
+- Added ability to paste content without newlines into the Obsidian editor.
 
 ## Installing
 ### Via the Community Plugin Manager
