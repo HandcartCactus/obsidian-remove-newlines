@@ -1,3 +1,4 @@
+import { htmlToMarkdown } from "obsidian";
 /* 
 
 This file was broken out so that I could implement testing for the plugin.
@@ -28,4 +29,21 @@ const removeBlankLines = function(text: string): string {
     return text;
 }
 
-export { removeNewlines, removeBlankLines };
+const clipboardItemToString = async function (
+	item: ClipboardItem
+): Promise<string | null> {
+
+	if (item.types.includes("text/html")) {
+		const html = await (await item.getType("text/html")).text();
+		return htmlToMarkdown(html);
+	}
+
+	if (item.types.includes("text/plain")) {
+		return await (await item.getType("text/plain")).text();
+	}
+
+	return null;
+}
+
+
+export { removeNewlines, removeBlankLines, clipboardItemToString };

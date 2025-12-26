@@ -7,7 +7,7 @@ import {
 	Setting,
 } from "obsidian";
 
-import { removeNewlines, removeBlankLines } from "utils";
+import { removeNewlines, removeBlankLines, clipboardItemToString } from "utils";
 
 interface RemoveNewlineSettings {
 	fixWhitespace: boolean;
@@ -151,6 +151,9 @@ export default class RemoveNewline extends Plugin {
 		await this.saveData(this.settings);
 	}
 
+
+
+	// cleaning methods are wrapped so we can pass settings as params
 	removeNewlines = (text: string): string => {
 		return removeNewlines(text, this.settings.fixHyphenation, this.settings.fixWhitespace);
 	}
@@ -159,36 +162,48 @@ export default class RemoveNewline extends Plugin {
 		return removeBlankLines(text);
 	}
 
-	removeNewlinesFromSelection = (editor: Editor): void =>  {
+
+
+	transformSelection = (editor: Editor, transformFn: (text: string) => string): void =>  {
 		let selection = editor.getSelection();
 
-		selection = this.removeNewlines(selection);
+		selection = transformFn(selection);
 
 		editor.replaceSelection(selection);
 	}
 
-	pasteWithoutNewlines = async (editor: Editor): Promise<void> => {
-		let selection = await navigator.clipboard.readText();
-
-		selection = this.removeNewlines(selection);
-
-		editor.replaceSelection(selection);
+	removeNewlinesFromSelection = (editor: Editor): void =>  {
+		this.transformSelection(editor, this.removeNewlines);
 	}
 
 	removeBlankLinesFromSelection = (editor: Editor): void =>  {
-		let selection = editor.getSelection();
+		this.transformSelection(editor, this.removeBlankLines);
+	}
 
-		selection = this.removeBlankLines(selection);
 
-		editor.replaceSelection(selection);
+
+
+	pasteTransformed = async (editor: Editor, transformFn: (text: string) => string): Promise<void> => {
+		// used to be .readText() but it was stripping formatting from html
+		const clipboardItems = await navigator.clipboard.read();
+
+		// AFAICT there's only one item in the ClipboardItems array. I think.
+		// clipboardItemToString will preserve HTML formatting, .readText() will not.
+		const textToTransform = await clipboardItemToString(clipboardItems[0])
+
+		if (!textToTransform) return;
+
+		const transformedText = transformFn(textToTransform);
+
+		editor.replaceSelection(transformedText);
+	}
+
+	pasteWithoutNewlines = async (editor: Editor): Promise<void> => {
+		this.pasteTransformed(editor, this.removeNewlines);
 	}
 
 	pasteWithoutBlankLines = async (editor: Editor): Promise<void> => {
-		let selection = await navigator.clipboard.readText();
-
-		selection = this.removeBlankLines(selection);
-
-		editor.replaceSelection(selection);
+		this.pasteTransformed(editor, this.removeBlankLines);
 	}
 }
 
