@@ -1,6 +1,6 @@
 How to install and test the v1.0.7 beta as a remove-newlines user:
 
-1. Download the `main.js` file from this folder (not including the README)
+1. Download the [`main.js`](https://raw.githubusercontent.com/HandcartCactus/obsidian-remove-newlines/refs/heads/main/beta/main.js) file from this folder
 2. Close Obsidian.md if it is open.
 3. Go to \<YourVaultFolder\>/.obsidian/plugins/remove-newlines
 4. Replace the `main.js` file there with the `main.js` file you just downloaded
