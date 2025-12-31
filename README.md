@@ -35,6 +35,9 @@ There are no hotkeys for these actions by default, but you can create them in th
 ![A screenshot of the hotkey menu in the Obsidian settings modal](media/Add%20Hotkeys.png)
 
 ## What's New?
+### 1.0.7
+- Convert HTML formatting to markdown while pasting, instead of stripping text.
+
 ### 1.0.6
 - Refactors core code and introduces testing
 - fixes the remove blank lines function to work even with tables and tabbed text 
