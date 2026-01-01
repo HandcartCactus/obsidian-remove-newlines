@@ -1,7 +1,7 @@
 {
 	"id": "remove-newlines",
 	"name": "Remove Newlines",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"minAppVersion": "0.15.0",
 	"description": "Remove newlines or blank lines from selected or pasted text.",
 	"author": "Elias Jaffe",
