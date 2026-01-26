@@ -1,16 +1,18 @@
 # Remove Newlines
 
 ## Core Features
-+ Adds two (sorely needed) actions to Obsidian.md:
-  1. Remove newlines from text (optionally remove word-break hyphenation and fix consecutive whitespace issues)
-  2. Remove blank lines from text
-+ The actions accept input from wherever you might have text:
-  1. Selected in the editor
-  2. From your clipboard (while pasting)
-+ The actions can be run any way you find most convenient:
-  1. Right-click menu (context menu)
-  2. Keyboard shortcuts (hotkeys)
-  3. Command Palette
+Adds four commands:
++ `Remove newlines from selection` and `Paste without newlines` can remove newlines/line breaks from text in the editor or clipboard. These commands can optionally remove word-break hyphenation and fix consecutive whitespace issues. These commands are especially useful for cleaning up text copied out of a PDF.
++ `Remove blank lines from selection` and `Paste without blank lines` can remove blank lines from text in the editor or clipboard. These commands are especially useful when pasting content from the web, which can often have a gratuitous amount of blank lines and whitespace.
+
+The commands will appear in the context menu (right-click), but can also be invoked via the Command Palette or bound to a keyboard shortcut.
+ 
+## Use Cases
+I started developing `remove-newlines` because copy-pasting quotes from PDFs into my Obsidian notes involved a lot of tedious clean-up work. Since then, it has saved me countless hours of cleaning up ugly text formatting. People tend to use this plugin for the following use cases:
+1. Copy-pasting from a PDF: Text copied from PDFs often contains hard-wraps (e.g. a newline every 80 characters) and hyphenated word breaks. `Paste without newlines` will fix it.
+2. Copy-pasting from the web: Text copied from HTML often gets rendered into markdown with a large amount of unecessary blank lines. `Paste without blank lines` can fix it.
+3. Copy-pasting from LLM tools (e.g. ChatGPT, Claude, Perplexity): This falls under "text copied from HTML", but this seems to be a popular use case. I recommend you use the dedicated copy buttons in the UI for best results, as they often put well-formatted markdown into the clipboard. Clicking and dragging the text on the page will often copy a bunch of gross HTML that converts to markdown poorly (and inconsistently). However, this text *is* significantly easier to clean up when you use `Paste without blank lines`.
+4. Cleaning up existing notes: `Remove blank lines from selection` is useful when cleaning up large drafts with lots of whitespace.
 
 ## Usage
 
@@ -72,7 +74,7 @@ There are no hotkeys for these actions by default, but you can create them in th
 3. Unzip the release file and copy over `main.js`, `styles.css`, and `manifest.json` into the `remove-newlines/` folder you created in step 2.
 
 ## Report Issues
-If you encounter any issues, please report them on the [issue tracker](https://github.com/HandcartCactus/obsidian-remove-newlines/issues/new?assignees=HandcartCactus&labels=bug&projects=&template=bug_report.md&title=%5BBUG%5D) for this plugin.
+If you encounter any issues, please report them on the [issue tracker](https://github.com/HandcartCactus/obsidian-remove-newlines/issues/new?assignees=HandcartCactus&labels=bug&projects=&template=bug_report.md&title=%5BBUG%5D) for this plugin. For help with pasting-related commands, please be sure to note what operating system and applications you are using (e.g. Windows, pasting text from Chrome).
 
 ## Request Features
 If you'd like to request a feature or have an idea for a new feature, please use the GitHub [issue tracker](https://github.com/HandcartCactus/obsidian-remove-newlines/issues/new?assignees=HandcartCactus&labels=enhancement&projects=&template=feature_request.md&title=%5BFEATURE%5D).
