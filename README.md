@@ -2,8 +2,8 @@
 
 ## Core Features
 Adds four commands:
-+ `Remove newlines from selection` and `Paste without newlines` can remove newlines/line breaks from text in the editor or clipboard. These commands can optionally remove word-break hyphenation and fix consecutive whitespace issues. These commands are especially useful for cleaning up text copied out of a PDF.
-+ `Remove blank lines from selection` and `Paste without blank lines` can remove blank lines from text in the editor or clipboard. These commands are especially useful when pasting content from the web, which can often have a gratuitous amount of blank lines and whitespace.
++ `Remove newlines from selection` and `Paste without newlines` can remove newlines from text. They can turn hard-wrapped text into a single paragraph. These commands can optionally remove word-break hyphenation and fix consecutive whitespace issues.  This is especially useful when pasting text from a PDF.
++ `Remove blank lines from selection` and `Paste without blank lines` can remove blank lines from text. These commands are especially useful when pasting content from the web, which can often have a gratuitous amount of blank lines and whitespace.
 
 The commands will appear in the context menu (right-click), but can also be invoked via the Command Palette or bound to a keyboard shortcut.
  
