@@ -1,6 +1,6 @@
 ---
 {
-  "tags": ["journal", "yadda yadda"],
+  "tags": ["journal", "kebab-case", "camelCase", "snake_case"],
   "publish": false
 }
 ---
