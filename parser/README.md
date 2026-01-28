@@ -7,3 +7,16 @@ This directory is in support of remove-newlines understanding various markdown f
 + https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c#im-having-problems-with-esm-and-typescript
 + https://github.com/jqhoogland/remark-preset-obsidian
 + https://forum.obsidian.md/t/obsidian-markdown-parser/55922/3
+
+# running the parser
+```
+npm i unified remark-parse remark-gfm remark-obsidian remark-frontmatter unist-util-inspect fs
+```
+
+```
+tsc ofm-parser.ts
+```
+
+```
+node ofm-parser.js
+```
