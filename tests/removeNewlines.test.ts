@@ -97,4 +97,11 @@ describe("removeBlankLines", () => {
         const actual = removeBlankLines(input);
         expect(actual).toBe(expected);
     });
+
+    test("does not strip embedded images", () => {
+        const input = "![[myimage.png]]";
+        const expected = "![[myimage.png]]";
+        const actual = removeBlankLines(input);
+        expect(actual).toBe(expected);
+    });
 });
