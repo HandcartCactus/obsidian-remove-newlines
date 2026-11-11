@@ -3,7 +3,7 @@
 ## Core Features
 Adds four commands:
 + `Remove newlines from selection` and `Paste without newlines` can remove newlines from text. They can turn hard-wrapped text into a single paragraph. These commands can optionally remove word-break hyphenation and fix consecutive whitespace issues.  This is especially useful when pasting text from a PDF.
-+ `Remove blank lines from selection` and `Paste without blank lines` can remove blank lines from text, which is especially useful when pasting web content with gratuitous whitespace. Blank lines Markdown needs are kept: around tables, headings, dividers, callouts and blockquotes, and inside code blocks, frontmatter, math and comments. Blank lines *between* table rows are still removed, so tables pasted from PDFs get repaired. Can be turned off in settings.
++ `Remove blank lines from selection` and `Paste without blank lines` can remove blank lines from text, which is especially useful when pasting web content with gratuitous whitespace. Blank lines Markdown needs are kept: around tables, headings, dividers, callouts and blockquotes, after a list that would otherwise absorb the following paragraph, and inside code blocks, frontmatter, math and comments. Blank lines *between* table rows are still removed, so tables pasted from PDFs get repaired. Can be turned off in settings.
 
 The commands will appear in the context menu (right-click), but can also be invoked via the Command Palette or bound to a keyboard shortcut.
  

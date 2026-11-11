@@ -194,10 +194,23 @@ describe("removeBlankLines", () => {
 		expect(removeBlankLines(input, true, true)).toBe("| a | b |\n\n| c | d |");
 	});
 
-	test("unregistered blank lines are dropped", () => {
-		// No built-in rule covers plain text or list items.
-		expect(blankKeep("para\n\nlist item\n\n- a\n- b").some((kept) => kept)).toBe(false);
+	test("gaps with no boundary rule are dropped", () => {
+		expect(blankKeep("para\n\nfoo\n\nbar").some((kept) => kept)).toBe(false);
 		expect(removeBlankLines("para\n\nfoo\n\nbar")).toBe("para\nfoo\nbar");
+	});
+
+	test("a list and adjacent text keep their blank", () => {
+		// Otherwise the paragraph becomes a lazy continuation of the last item.
+		expect(removeBlankLines("1. a\n2. b\n\n其他应用可能因继承 FC_LANG 而没有出现问题。")).toBe(
+			"1. a\n2. b\n\n其他应用可能因继承 FC_LANG 而没有出现问题。"
+		);
+		// A paragraph before a list: drop the blank when the list can interrupt it.
+		expect(removeBlankLines("para\n\n- a")).toBe("para\n- a");
+		expect(removeBlankLines("para\n\n1. a")).toBe("para\n1. a");
+		// ...and keep it when it cannot, or the text would become the paragraph.
+		expect(removeBlankLines("para\n\n2. a")).toBe("para\n\n2. a");
+		// Two list items still merge into one list.
+		expect(removeBlankLines("- a\n\n- b")).toBe("- a\n- b");
 	});
 
 	test("keeps blank lines between a heading and a table", () => {

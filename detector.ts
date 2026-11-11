@@ -249,6 +249,19 @@ const frontmatterBoundary: BoundaryRule = (before) => before.kind === "frontmatt
 const blockquoteBoundary: BoundaryRule = (before, after) =>
 	(before.kind === "blockquote") !== (after.kind === "blockquote");
 
+// A list item absorbs a following unindented paragraph as a lazy continuation,
+// so a blank after a list must survive. Before a list it may go: a bullet or a
+// list starting at 1. can interrupt a paragraph, anything else cannot.
+const listBoundary: BoundaryRule = (before, after) => {
+	const beforeIsList = before.kind === "listItem";
+	const afterIsList = after.kind === "listItem";
+	if (beforeIsList === afterIsList) return false; // list|list merges
+	if (beforeIsList) return true;
+	// Keep the blank only for a list that cannot interrupt a paragraph.
+	const ordered = /^ {0,3}(\d{1,9})[.)][ \t]/.exec(after.raw);
+	return ordered !== null && ordered[1] !== "1";
+};
+
 /** Registry; push more predicates to extend. Any boundary keeps the gap. */
 export const BOUNDARY_RULES: BoundaryRule[] = [
 	tableBoundary,
@@ -257,4 +270,5 @@ export const BOUNDARY_RULES: BoundaryRule[] = [
 	calloutBoundary,
 	frontmatterBoundary,
 	blockquoteBoundary,
+	listBoundary,
 ];

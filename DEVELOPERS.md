@@ -19,6 +19,8 @@ Deploying a release:
 17. click "release".
 
 ## Blank-line cleanup
+`clipboardItemToString` prefers `text/plain` when the HTML conversion differs from it only in whitespace: the converter adds structural whitespace of its own (list-item indentation, block separators), and in that case the plain text is what the user actually copied. Formatting (`**bold**`, links) makes the texts differ, and then the HTML conversion is used.
+
 `removeBlankLines` in [`utils.ts`](utils.ts) is still the original `split` → `filter` → `join`, but the filter no longer decides anything: it reads one keep/drop flag per line, and those flags come from the detector when the setting is on.
 
 ```ts

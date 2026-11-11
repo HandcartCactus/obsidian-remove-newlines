@@ -121,7 +121,7 @@ Regions are classification data, not a second code path: blank lines inside a re
 **Explicitly out of scope** (recorded so it is not filed as a bug later):
 
 - **Indented code blocks** (4 spaces / tab) are not protected. CommonMark protects their blank lines, but that conflicts with the existing `tabulation doesnt break it` contract, and paste scenarios are almost entirely plain indented text. `kindOf` ignores leading whitespace (consistent with the existing table tests), so such a line is never marked `fenceOpen` and its blank lines are ordinary candidates.
-- Blank lines between list items keep being deleted (existing `space list tabulation` tests); blank lines between a list item and its indented continuation are also deleted in v1 (only a tight/loose cosmetic difference).
+- Blank lines between list items keep being deleted (existing `space list tabulation` tests). A blank **after** a list item, before non-list text, is kept: deleting it turns that text into a lazy continuation of the last item and renders it indented. A blank **before** a list is dropped when the list can interrupt a paragraph (bullet, or ordered starting at `1.`) and kept otherwise. The function only removes lines; it never inserts the blank that a source without one would need.
 
 ## 4. Built-in Rules (candidates, as exhaustive as practical)
 
@@ -135,10 +135,11 @@ Regions are classification data, not a second code path: blank lines inside a re
 | R4 `callout-boundary` ✔ | `before`/`after` is a callout opener | Deleting the blank merges two callouts (or a callout and a plain quote) into one, losing the second callout's structure | ✔ |
 | R5 `blockquote-boundary` ✔ | one side is a blockquote line, the other is **not** | Two quote blocks fuse; in pasted text quote blocks are usually semantic boundaries | ✔ (downgrade if it proves too conservative) |
 | R6 `frontmatter-boundary` ✔ | `before` is the frontmatter closing fence | Deleting it fuses the first body line into the closing fence | ✔ (added during implementation) |
-| R7 `footnote-definition` | Between a footnote definition `[^id]:` and its indented continuation | Continuation merging is subtle, pasting this is rare | v2 candidate |
-| R8 `html-block-boundary` | HTML raw-block boundaries | Depends on P5 | v2 candidate |
-| R9 `math-block-boundary` | Between a `$$` fence and outside text | In Obsidian math blocks are already delimited by the `$` lines and rarely need blanks | v2 candidate (skipped for now) |
-| R10 `preserve-double-newline` | User-defined hard break (keep every paragraph gap) | Beyond "required for rendering" | Not doing it; left as a rule-extension demo |
+| R7 `list-boundary` ✔ | `before` is a list item and `after` is not, or the reverse when the list cannot interrupt a paragraph | An unindented paragraph right after a list item is a lazy continuation of it, so that blank must stay; a bullet or an ordered list starting at `1.` can interrupt a paragraph, so a blank before it is redundant | ✔ (added after a bug report) |
+| R8 `footnote-definition` | Between a footnote definition `[^id]:` and its indented continuation | Continuation merging is subtle, pasting this is rare | v2 candidate |
+| R9 `html-block-boundary` | HTML raw-block boundaries | Depends on P5 | v2 candidate |
+| R10 `math-block-boundary` | Between a `$$` fence and outside text | In Obsidian math blocks are already delimited by the `$` lines and rarely need blanks | v2 candidate (skipped for now) |
+| R11 `preserve-double-newline` | User-defined hard break (keep every paragraph gap) | Beyond "required for rendering" | Not doing it; left as a rule-extension demo |
 
 Every rule is a predicate answering one condition: is there a block boundary between these two lines? `true` keeps the first blank line of the gap, `false` leaves the decision to the other rules. Protected-region blanks are not a rule — they are the content clause of §2.2 — because they matter for every blank line in the region, not for a gap between two blocks.
 
@@ -197,7 +198,7 @@ Content (protected regions, §3)
 - Frontmatter fences get their own kind, while a body blank line stays `kind: "blank"` and is still kept
 - A list item never turns the following `---` into a setext underline
 
-Boundaries (R1–R6, §4)
+Boundaries (R1–R7, §4)
 
 - Paragraph ↔ table blanks are kept; a repairable seam (`header | delimiter`, `delimiter | row`) is dropped
 - Two adjacent tables stay separated (`row | row` is not a repair seam)
@@ -205,6 +206,7 @@ Boundaries (R1–R6, §4)
 - Headings keep their blanks, both ATX and setext
 - Thematic-break boundaries keep blanks: `para` + blank + `---` does not turn `para` into a setext title, and a real `Title` + `---` is not split
 - Paragraph ↔ blockquote keeps its blank; two quote lines drop theirs and stay one block
+- A list followed by text keeps its blank; a paragraph before a bullet/`1.` list loses it, before a `2.` list keeps it; two list items still merge
 - Callouts keep their blanks and collapse multiples
 - A heading next to a table keeps its blank
 
