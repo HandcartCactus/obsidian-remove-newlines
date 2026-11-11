@@ -172,17 +172,26 @@ describe("removeBlankLines", () => {
 
 	test("blank means trim() is empty, so NBSP junk counts as blank", () => {
 		expect(removeBlankLines("a\n\u00a0\nb")).toBe("a\nb");
-		// The NBSP line is the gap head here, so one line is kept — as a real blank.
-		expect(removeBlankLines("| a | b |\n\u00a0\n\n| c | d |")).toBe("| a | b |\n\n| c | d |");
 	});
 
-	test("kept lines are emitted without trailing whitespace", () => {
-		expect(removeBlankLines("para  \n   \n| a | b |  \n")).toBe("para\n\n| a | b |");
-		expect(removeBlankLines("```\nx\n   \ny  \n```")).toBe("```\nx\n\ny\n```");
+	test("kept lines are emitted as written while trimming is off", () => {
+		expect(removeBlankLines("para  \n   \n| a | b |  \n")).toBe("para  \n   \n| a | b |  ");
+		expect(removeBlankLines("```\nx\n   \ny\n```")).toBe("```\nx\n   \ny\n```");
 	});
 
-	test("a kept blank lookalike still lands as a real blank line", () => {
-		expect(removeBlankLines("| a | b |\n\u00a0\n\u00a0\n| c | d |")).toBe("| a | b |\n\n| c | d |");
+	test("the trim setting removes trailing whitespace from every kept line", () => {
+		expect(removeBlankLines("para  \n   \n| a | b |  \n", true, true)).toBe("para\n\n| a | b |");
+		expect(removeBlankLines("```\nx\n   \ny  \n```", true, true)).toBe("```\nx\n\ny\n```");
+	});
+
+	test("the trim setting only touches kept lines", () => {
+		expect(removeBlankLines("a  \n\n\nb  \n", true, true)).toBe("a\nb");
+	});
+
+	test("a kept lookalike separates blocks only once it is trimmed", () => {
+		const input = "| a | b |\n\u00a0\n\n| c | d |";
+		expect(removeBlankLines(input)).toBe("| a | b |\n\u00a0\n| c | d |");
+		expect(removeBlankLines(input, true, true)).toBe("| a | b |\n\n| c | d |");
 	});
 
 	test("unregistered blank lines are dropped", () => {

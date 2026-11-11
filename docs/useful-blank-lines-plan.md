@@ -29,7 +29,7 @@ The input is the **complete** line array, blank lines included. Nothing is remov
 ```
 detector.ts (new)
   ├─ decidePreservedLines(raws): DecisionMap  // kindOf each line, decide keep[i]
-  ├─ DecisionMap { lines: readonly ScannedLine[]; keep: readonly boolean[] }
+  ├─ DecisionMap { lines; keep; blank }        // per line: classification + two flags
   └─ BoundaryRule[]  BOUNDARY_RULES              // extension point: is this gap a block boundary?
 utils.ts
   └─ removeBlankLines(text, preserveUseful = true)   // the original split/filter/join
@@ -90,7 +90,7 @@ The `if`/`else` only picks the decisions; the removal step is the same lookup in
 1. `keep[i] = true` for every non-blank line: non-blank lines are never inspected for removal. `keep` is parallel to the **input array**, not to `lines` filtered of something.
 2. A blank line inside a protected region is content: `keep = true`, all of them, never collapsed.
 3. Any other blank line is kept iff it is the **first blank line of its gap**, both sides exist, and at least one rule reports a block boundary there. Rules are conditions, not verdicts: they only say "these two blocks must not fuse". Keeping only the first line is what collapses a gap to one.
-4. Everything else gets `keep = false`. Every kept line is emitted with its trailing whitespace trimmed, so a kept blank line always lands as an empty line — even when it held NBSP or a form feed — and a kept lookalike still separates the blocks it sits between.
+4. Everything else gets `keep = false`. Kept lines are emitted as written. With the **Trim trailing whitespace** setting on (§5) every kept line loses its trailing whitespace, so a kept blank line — even one holding NBSP or a form feed — lands as an empty line.
 
 > OR over all rules (one hit keeps): a `false` never vetoes, so a new rule can only preserve more; extenders cannot accidentally break someone else's rule.
 
@@ -150,13 +150,15 @@ Every rule is a predicate answering one condition: is there a block boundary bet
 interface RemoveNewlineSettings {
   fixWhitespace: boolean;
   fixHyphenation: boolean;
-  preserveUsefulBlankLines: boolean;   // new
+  preserveUsefulBlankLines: boolean;   // new, default true
+  trimTrailingWhitespace: boolean;     // new, default false
 }
-const DEFAULT_SETTINGS = { ..., preserveUsefulBlankLines: true };
+const DEFAULT_SETTINGS = { ..., preserveUsefulBlankLines: true, trimTrailingWhitespace: false };
 ```
 
-- New toggle in the settings tab: **Preserve useful blank lines** — "Keep blank lines required to render tables, headings, code blocks, etc. Disable to restore legacy remove-all behavior."
-- **On by default**: the current behavior silently corrupts user content, so this is a bug fix. Off = the detector is never called: the decisions come from `line.trim() !== ""`, exactly the old filter.
+- New toggle in the settings tab: **Preserve useful blank lines** — "When removing blank lines, keep the ones markdown needs to render tables, headings, dividers, callouts, blockquotes, code blocks, and frontmatter. (Recommended)"
+- **On by default**: the old behavior silently corrupts user content, so this is a bug fix. Off = the detector is never called; the keep flags come from `line.trim() !== ""`. With the trailing trim off (its default) that is byte-identical to the pre-detector filter.
+- Second toggle: **Trim trailing whitespace** — "Remove trailing whitespace from every kept line, including blank lines and lines inside code blocks. This drops Markdown hard line breaks (two trailing spaces)." **Off by default**: with it off every kept line is emitted exactly as written, so a kept blank line that holds NBSP still looks like a blank but does not separate blocks; turning it on canonicalises them.
 - Selection and Paste share `transformFn`, so wiring once covers both paths.
 - Applies only to the remove-blank-lines commands; removeNewlines (collapse to one line) is unchanged.
 
@@ -165,7 +167,7 @@ const DEFAULT_SETTINGS = { ..., preserveUsefulBlankLines: true };
 | File | Change |
 |---|---|
 | `detector.ts` | New: types, `decidePreservedLines` (line kinds + regions + keep flags), `BOUNDARY_RULES`; produces no text and mutates nothing |
-| `utils.ts` | `removeBlankLines(text: string, preserveUseful?: boolean): string`: original split/filter/join; the filter reads `decisionMap.keep[i]`. Off = no detector call, i.e. the original trim-only decisions |
+| `utils.ts` | `removeBlankLines(text: string, preserveUseful?: boolean, trimTrailing?: boolean): string`: original split/filter/join; the filter reads `decisionMap.keep[i]`, and `trimTrailing` (default false) adds the trailing whitespace trim. Off = no detector call, i.e. the original trim-only flags |
 | `main.ts` | Settings field + pass-through + SettingTab toggle |
 | `tests/detector.test.ts` | New: detector contract (parallel `keep`, no input mutation, frozen flags) + rule unit tests |
 | `tests/removeNewlines.test.ts` | Add regression cases; the existing 15 must stay untouched and green (their inputs contain no rule-hit blocks, so output is unchanged with the default on) |
@@ -184,11 +186,12 @@ Detector contract
 - Only blank lines can be `keep = false`; non-blank lines are always kept
 - A blank line is `trim() === ""`: NBSP, form feed and U+3000 lines count as blank, as they did before the detector
 - A kept gap keeps its first blank line, whatever whitespace that line holds
-- Every kept line is emitted without trailing whitespace, including inside code blocks
+- With trimming off, every kept line is emitted exactly as written
+- With trimming on, every kept line loses its trailing whitespace, code blocks included
 
 Content (protected regions, §3)
 
-- Blank lines inside fenced code, frontmatter and `$$` math are kept (as empty lines once trimmed)
+- Blank lines inside fenced code, frontmatter and `$$` math are kept (as empty lines)
 - Blank lines inside `%%` comments are kept
 - A single-line `$$x$$` opens no region
 - Frontmatter fences get their own kind, while a body blank line stays `kind: "blank"` and is still kept

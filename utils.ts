@@ -22,24 +22,26 @@ const removeNewlines = function(text: string, fixHyphenation:boolean, fixWhitesp
     return text;
 }
 
-const removeBlankLines = function(text: string, preserveUseful = true): string {
+const removeBlankLines = function(
+    text: string,
+    preserveUseful = true,
+    trimTrailing = false
+): string {
     // Original pipeline: split into lines, drop what does not belong, join.
-    // The branch below only picks the decision map; removal is always the same
-    // lookup. See docs/useful-blank-lines-plan.md.
+    // The branch below only picks the decision map; the loop only applies it.
+    // See docs/useful-blank-lines-plan.md.
     const lines = text.split(/\r?\n/);
 
     let decisionMap: KeepDecisionMap;
     if (preserveUseful) {
-        // Detector: keep[i] says whether line i survives.
         decisionMap = decidePreservedLines(lines);
     } else {
-        // Legacy: a line survives only if it has content.
         decisionMap = { keep: lines.map((line) => line.trim() !== "") };
     }
 
     return lines
         .filter((_, i) => decisionMap.keep[i])
-        .map((line) => line.trimEnd())  // ES2019 lib in tsconfig.json; see DEVELOPERS.md
+        .map((line) => (trimTrailing ? line.trimEnd() : line))
         .join("\n");
 }
 

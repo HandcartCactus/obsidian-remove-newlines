@@ -29,7 +29,7 @@ I started developing `remove-newlines` because copy-pasting quotes from PDFs int
 ![Removing blank lines from a text selection in the Obsidian editor](media/Remove%20Blank%20Lines%20From%20Selection.gif)
 
 ### Change Settings
-You can change how Remove Newlines handles word-break hyphenation and consecutive whitespace (when removing newlines) by visiting the plugin's settings tab.
+You can change how Remove Newlines handles word-break hyphenation and consecutive whitespace (when removing newlines), and whether it trims trailing whitespace, by visiting the plugin's settings tab.
 ![A screenshot of the settings menu.](media/settings_menu.png)
 
 ### Adding Hotkeys
