@@ -1,5 +1,6 @@
 import { htmlToMarkdown } from "obsidian";
-import { removeBlankLinesWithDetector } from "detector";
+import { decidePreservedLines } from "detector";
+import type { KeepDecisionMap } from "detector";
 /* 
 
 This file was broken out so that I could implement testing for the plugin.
@@ -22,17 +23,24 @@ const removeNewlines = function(text: string, fixHyphenation:boolean, fixWhitesp
 }
 
 const removeBlankLines = function(text: string, preserveUseful = true): string {
+    // Original pipeline: split into lines, drop what does not belong, join.
+    // The branch below only picks the decision map; removal is always the same
+    // lookup. See docs/useful-blank-lines-plan.md.
+    const lines = text.split(/\r?\n/);
+
+    let decisionMap: KeepDecisionMap;
     if (preserveUseful) {
-        // Keep blank lines markdown needs for block structure (tables,
-        // headings, ...). See docs/useful-blank-lines-plan.md.
-        return removeBlankLinesWithDetector(text);
+        // Detector: keep[i] says whether line i survives.
+        decisionMap = decidePreservedLines(lines);
+    } else {
+        // Legacy: a line survives only if it has content.
+        decisionMap = { keep: lines.map((line) => line.trim() !== "") };
     }
-    // Legacy behavior: drop every blank line.
-    text = text
-    .split(/\r?\n/)
-    .filter(line => line.trim() !== "")
-    .join("\n");
-    return text;
+
+    return lines
+        .filter((_, i) => decisionMap.keep[i])
+        .map((line) => line.trimEnd())  // ES2019 lib in tsconfig.json; see DEVELOPERS.md
+        .join("\n");
 }
 
 const clipboardItemToString = async function (

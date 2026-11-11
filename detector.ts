@@ -1,5 +1,10 @@
-// Syntax-aware blank-line detection for removeBlankLines.
-// Design document: docs/useful-blank-lines-plan.md
+// Blank-line detector: pure, mark-only classification.
+//
+// `decidePreservedLines(lines)` takes the whole document as an array (blank lines included,
+// nothing pre-filtered) and returns a per-line mapping: keep or drop. It
+// never copies, deletes, rewrites or joins lines, and the mapping is a fresh
+// array held next to the input, so nothing is mutated in place.
+// See docs/useful-blank-lines-plan.md.
 
 export type LineKind =
 	| "blank"
@@ -19,38 +24,41 @@ export type LineKind =
 
 export type Region = "none" | "fencedCode" | "frontmatter" | "math" | "comment";
 
+/** Classification of one input line. `raw` is read, never written back. */
 export interface ScannedLine {
 	index: number;
 	raw: string;
 	kind: LineKind;
+	/** Enclosing protected block, where blank lines are content. */
 	region: Region;
 }
 
-export interface BlankRun {
-	/** Index of the first blank line of the run. */
-	start: number;
-	/** Index just past the last blank line of the run. */
-	end: number;
-	/** Nearest non-blank line before the run (ignoring protected lines). */
-	before: ScannedLine | null;
-	/** Nearest non-blank line after the run (ignoring protected lines). */
-	after: ScannedLine | null;
-	/** True when any registered rule voted the run useful. */
-	useful: boolean;
+/**
+ * Detector output: one entry per input line, in input order, and immutable.
+ * `keep[i]` is the only decision the caller acts on — true passes line `i` of
+ * the input array to the output, false drops it.
+ */
+export interface DecisionMap {
+	readonly lines: readonly ScannedLine[];
+	readonly keep: readonly boolean[];
 }
 
-export interface ScannedDoc {
-	lines: ScannedLine[];
-	/** Maximal runs of unprotected blank lines that sit between content. */
-	runs: BlankRun[];
-}
+/** The part of `DecisionMap` the removal step consumes: one flag per line. */
+export type KeepDecisionMap = Pick<DecisionMap, "keep">;
 
-export interface UsefulBlankLineRule {
-	id: string;
-	isUseful(run: BlankRun, doc: ScannedDoc): boolean;
-}
+/**
+ * A condition: true when `before` and `after` form a block boundary, i.e. the
+ * gap between them needs one blank line. Rules are conditions, not verdicts —
+ * the engine turns any matching boundary into `keep`. Both lines always exist,
+ * so a rule is never asked about a document edge.
+ */
+export type BoundaryRule = (before: ScannedLine, after: ScannedLine) => boolean;
 
-const blankRE = /^[ \t]*$/;
+/**
+ * A line is blank when it has no visible character, i.e. `trim()` removes all
+ * of it (spaces, tabs, NBSP, form feed, U+2000..U+200A, U+3000, U+FEFF).
+ */
+export const isBlankLine = (raw: string): boolean => raw.trim() === "";
 const tableRowRE = /^[ \t]*\|/;
 const tableDelimiterRE = /^[ \t]*\|?[ \t]*:?-+:?[ \t]*\|/;
 const atxHeadingRE = /^ {0,3}#{1,6}(?:[ \t]|$)/;
@@ -63,12 +71,12 @@ const listItemRE = /^(?: {0,3}[-*+][ \t]+| {0,3}\d{1,9}[.)][ \t]+)/;
 const mathOpenRE = /^ {0,3}\$\$(?!.*\$\$)/;
 const mathCloseRE = /\$\$[ \t]*$/;
 const fmDashOpenRE = /^---[ \t]*$/;
-const fmPlusOpenRE = /^\+\+\+[ \t]*$/;
 const fmDashCloseRE = /^(---|\.\.\.)[ \t]*$/;
-const fmPlusCloseRE = /^\+\+\+[ \t]*$/;
+// "+++" closes with itself, so opener and closer are the same pattern.
+const fmPlusFenceRE = /^\+\+\+[ \t]*$/;
 
-function classifyLine(raw: string, prev: ScannedLine | null, lines: ScannedLine[]): LineKind {
-	if (blankRE.test(raw)) return "blank";
+function kindOf(raw: string, prev: ScannedLine | null, lines: ScannedLine[]): LineKind {
+	if (isBlankLine(raw)) return "blank";
 	if (fenceRE.test(raw)) return "fenceOpen"; // → fenceClose once matched as closer
 	if (mathOpenRE.test(raw)) return "fenceOpen"; // $$ opener, same handling
 	if (calloutRE.test(raw)) return "callout";
@@ -79,8 +87,8 @@ function classifyLine(raw: string, prev: ScannedLine | null, lines: ScannedLine[
 	if (atxHeadingRE.test(raw)) return "atxHeading";
 	// A dash/equals line is the previous text line's setext underline when
 	// they are adjacent, or separated only by blank lines. The latter stays
-	// ambiguous, but keeping the heading reading is safe: R2/R3 preserve the
-	// run either way, while misreading a real heading's underline as an hr
+	// ambiguous, but keeping the heading reading is safe: R2/R3 keep the
+	// blank either way, while misreading a real heading's underline as an hr
 	// would delete it and split the heading from its title.
 	if (setextUnderlineRE.test(raw)) {
 		let p = prev;
@@ -92,32 +100,41 @@ function classifyLine(raw: string, prev: ScannedLine | null, lines: ScannedLine[
 	return "text";
 }
 
-export function scanDocument(text: string): ScannedDoc {
-	const raws = text.split(/\r?\n/);
+function nearestContent(lines: ScannedLine[], from: number, dir: number): ScannedLine | null {
+	for (let i = from; i >= 0 && i < lines.length; i += dir) {
+		if (lines[i].kind !== "blank") return lines[i];
+	}
+	return null;
+}
+
+/**
+ * Classifies every line of `raws` and returns one keep/drop flag per line. Non-blank
+ * lines are always kept; a blank line is kept when it is content (inside a
+ * protected region) or when it is the first blank of a gap whose two sides a
+ * boundary rule says must not fuse. Reads `raws`, never writes it.
+ */
+export function decidePreservedLines(raws: readonly string[]): DecisionMap {
 	const lines: ScannedLine[] = [];
 	for (let i = 0; i < raws.length; i++) {
 		const prev = lines.length ? lines[lines.length - 1] : null;
-		lines.push({ index: i, raw: raws[i], kind: classifyLine(raws[i], prev, lines), region: "none" });
+		lines.push({ index: i, raw: raws[i], kind: kindOf(raws[i], prev, lines), region: "none" });
 	}
 
 	// YAML/TOML frontmatter: opener on line 0 with a matching closer below.
-	if (raws.length > 1) {
-		const isPlus = fmPlusOpenRE.test(raws[0]);
-		if (isPlus || fmDashOpenRE.test(raws[0])) {
-			const closeRE = isPlus ? fmPlusCloseRE : fmDashCloseRE;
-			let closed = false;
-			for (let i = 1; i < raws.length; i++) {
-				if (closeRE.test(raws[i])) {
-					for (let j = 0; j <= i; j++) {
-						lines[j].region = "frontmatter";
-						lines[j].kind = "frontmatterFence";
-					}
-					closed = true;
-					break;
-				}
+	// Only the two fences get their own kind; the body keeps its own classes,
+	// so blank lines inside stay blank and still get a decision.
+	if (lines.length > 1) {
+		const isPlus = fmPlusFenceRE.test(lines[0].raw);
+		if (isPlus || fmDashOpenRE.test(lines[0].raw)) {
+			const closeRE = isPlus ? fmPlusFenceRE : fmDashCloseRE;
+			// An unclosed "---" stays a thematic break (kindOf's reading).
+			for (let i = 1; i < lines.length; i++) {
+				if (!closeRE.test(lines[i].raw)) continue;
+				lines[0].kind = "frontmatterFence";
+				lines[i].kind = "frontmatterFence";
+				for (let j = 0; j <= i; j++) lines[j].region = "frontmatter";
+				break;
 			}
-			// Unclosed "---" is just a thematic break, not frontmatter.
-			if (!closed) lines[0].kind = classifyLine(raws[0], null, lines);
 		}
 	}
 
@@ -127,20 +144,21 @@ export function scanDocument(text: string): ScannedDoc {
 	let inComment = false;
 	for (const line of lines) {
 		if (line.region === "frontmatter") continue;
+		const raw = line.raw;
 		if (code) {
 			line.region = "fencedCode";
-			const m = /^[ \t]*(`{3,}|~{3,})[ \t]*$/.exec(line.raw);
+			const m = /^[ \t]*(`{3,}|~{3,})[ \t]*$/.exec(raw);
 			if (m && m[1][0] === code.ch && m[1].length >= code.len) {
 				line.kind = "fenceClose";
 				code = null;
-			} else if (fenceRE.test(line.raw) || mathOpenRE.test(line.raw)) {
+			} else if (fenceRE.test(raw) || mathOpenRE.test(raw)) {
 				line.kind = "text"; // fence-like marker inside a code block
 			}
 			continue;
 		}
 		if (inMath) {
 			line.region = "math";
-			if (mathCloseRE.test(line.raw)) {
+			if (mathCloseRE.test(raw)) {
 				line.kind = "fenceClose";
 				inMath = false;
 			}
@@ -148,11 +166,11 @@ export function scanDocument(text: string): ScannedDoc {
 		}
 		if (inComment) {
 			line.region = "comment";
-			if (line.raw.indexOf("%%") !== -1) inComment = false;
+			if (raw.indexOf("%%") !== -1) inComment = false;
 			continue;
 		}
 		if (line.kind === "fenceOpen") {
-			const m = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line.raw);
+			const m = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(raw);
 			if (m) {
 				code = { ch: m[1][0], len: m[1].length };
 			} else {
@@ -160,145 +178,83 @@ export function scanDocument(text: string): ScannedDoc {
 			}
 			continue;
 		}
-		if (line.kind === "blank") {
-			const t = line.raw.trim();
-			if (t === "%%") inComment = true;
-		} else if (line.raw.indexOf("%%") !== -1 && line.raw.indexOf("%%", line.raw.indexOf("%%") + 2) === -1) {
-			inComment = true; // opener token on a content line
-		}
+		// A blank line cannot carry "%%"; only content lines open a comment.
+		const at = raw.indexOf("%%");
+		if (at !== -1 && raw.indexOf("%%", at + 2) === -1) inComment = true;
 	}
 
 	// A setext underline makes the text line above it (blank lines skipped) a
-	// heading title. Marking titles lets R2 protect blank runs inside a
-	// multi-line setext heading.
+	// heading title. Marking titles lets R2 keep blanks inside a multi-line
+	// setext heading.
 	for (const line of lines) {
 		if (line.kind !== "setextUnderline") continue;
 		const title = nearestContent(lines, line.index - 1, -1);
 		if (title && title.kind === "text") title.kind = "setextTitle";
 	}
 
-	const runs: BlankRun[] = [];
-	let i = 0;
-	while (i < lines.length) {
-		if (lines[i].kind !== "blank" || lines[i].region !== "none") {
-			i++;
-			continue;
-		}
-		const start = i;
-		while (i < lines.length && lines[i].kind === "blank" && lines[i].region === "none") i++;
-		const run: BlankRun = {
-			start,
-			end: i,
-			before: nearestContent(lines, start - 1, -1),
-			after: nearestContent(lines, i, +1),
-			useful: false,
-		};
-		if (run.before && run.after) {
-			run.useful = BUILTIN_RULES.some((rule) => rule.isUseful(run, { lines, runs }));
-		}
-		runs.push(run);
-	}
-	return { lines, runs };
+	// Non-blank lines are never inspected: they are always kept. A blank line is
+	// kept when it is content, or when it is the first blank of a gap whose two
+	// sides a boundary rule says must not fuse — that first-blank clause is what
+	// collapses a gap to one line. The caller trims the kept line, so the kept
+	// line is emitted as a real blank whatever whitespace it holds.
+	const kept = lines.map((line) => {
+		if (line.kind !== "blank") return true;
+		if (line.region !== "none") return true;
+		const before = nearestContent(lines, line.index - 1, -1);
+		const after = nearestContent(lines, line.index + 1, +1);
+		return (
+			lines[line.index - 1]?.kind !== "blank" &&
+			before !== null &&
+			after !== null &&
+			BOUNDARY_RULES.some((rule) => rule(before, after))
+		);
+	});
+	return { lines, keep: Object.freeze(kept) };
 }
 
-function nearestContent(lines: ScannedLine[], from: number, dir: number): ScannedLine | null {
-	for (let i = from; i >= 0 && i < lines.length; i += dir) {
-		if (lines[i].kind !== "blank") return lines[i];
-	}
-	return null;
-}
+const isTable = (l: ScannedLine): boolean =>
+	l.kind === "tableRow" || l.kind === "tableDelimiter";
+const isHeading = (l: ScannedLine): boolean =>
+	l.kind === "atxHeading" || l.kind === "setextTitle" || l.kind === "setextUnderline";
 
-const isTable = (l: ScannedLine | null): boolean =>
-	!!l && (l.kind === "tableRow" || l.kind === "tableDelimiter");
-const isHeading = (l: ScannedLine | null): boolean =>
-	!!l && (l.kind === "atxHeading" || l.kind === "setextTitle" || l.kind === "setextUnderline");
-
-const tableBoundaryRule: UsefulBlankLineRule = {
-	id: "table-boundary",
-	isUseful: (run) => {
-		// Both sides table rows: a break inside one table → delete (repair).
-		// One side table, other side text: block boundary → keep.
-		// Both sides table but not a repairable seam: two adjacent tables → keep.
-		const { before, after } = run;
-		if (!before || !after) return false;
-		if (!isTable(before) && !isTable(after)) return false;
-		if (isTable(before) && isTable(after)) {
-			return !isTableRepairSeam(before, after);
-		}
-		return true;
-	},
-};
-
-// A blank line between two rows may be deleted (rows merged) only when the
-// seam can still form a pipe-table: header | delimiter, or delimiter | body.
-// Row|row seams are NOT repairable — merging them would splice two adjacent
-// tables into one bogus table.
+// A blank line between two rows may be deleted only when the seam still forms
+// a pipe-table once merged: header | delimiter, or delimiter | body. Row | row
+// is not repairable — merging would splice two adjacent tables into one.
 function isTableRepairSeam(before: ScannedLine, after: ScannedLine): boolean {
 	if (before.kind === "tableDelimiter") return after.kind === "tableRow";
 	return before.kind === "tableRow" && after.kind === "tableDelimiter";
 }
 
-const headingBoundaryRule: UsefulBlankLineRule = {
-	id: "heading-boundary",
-	isUseful: (run) => isHeading(run.before) || isHeading(run.after),
+const tableBoundary: BoundaryRule = (before, after) => {
+	// Table ↔ text is a block boundary. Inside a table only a repairable seam
+	// (header | delimiter, delimiter | row) is not, because merging it still
+	// yields a pipe-table.
+	if (!isTable(before) && !isTable(after)) return false;
+	return !(isTable(before) && isTable(after) && isTableRepairSeam(before, after));
 };
 
-const thematicBreakBoundaryRule: UsefulBlankLineRule = {
-	id: "thematic-break-boundary",
-	isUseful: (run) => run.before?.kind === "hr" || run.after?.kind === "hr",
-};
+const headingBoundary: BoundaryRule = (before, after) => isHeading(before) || isHeading(after);
 
-const calloutBoundaryRule: UsefulBlankLineRule = {
-	id: "callout-boundary",
-	isUseful: (run) => run.before?.kind === "callout" || run.after?.kind === "callout",
-};
+const thematicBreakBoundary: BoundaryRule = (before, after) =>
+	before.kind === "hr" || after.kind === "hr";
 
-const frontmatterBoundaryRule: UsefulBlankLineRule = {
-	id: "frontmatter-boundary",
-	// The run right after a closed frontmatter block must survive, or the
-	// first body line fuses into the closing fence.
-	isUseful: (run) => run.before?.kind === "frontmatterFence",
-};
+const calloutBoundary: BoundaryRule = (before, after) =>
+	before.kind === "callout" || after.kind === "callout";
 
-const blockquoteBoundaryRule: UsefulBlankLineRule = {
-	id: "blockquote-boundary",
-	isUseful: (run) => {
-		const b = run.before;
-		const a = run.after;
-		if (!b || !a || b.kind === "callout" || a.kind === "callout") return false;
-		return (
-			(b.kind === "blockquote" && a.kind !== "blockquote") ||
-			(b.kind !== "blockquote" && a.kind === "blockquote")
-		);
-	},
-};
+// The blank after a closed frontmatter block must survive, or the first body
+// line fuses into the closing fence.
+const frontmatterBoundary: BoundaryRule = (before) => before.kind === "frontmatterFence";
 
-/** Registry; push more rules to extend. Evaluated top-down, any-vote. */
-export const BUILTIN_RULES: UsefulBlankLineRule[] = [
-	tableBoundaryRule,
-	headingBoundaryRule,
-	thematicBreakBoundaryRule,
-	calloutBoundaryRule,
-	frontmatterBoundaryRule,
-	blockquoteBoundaryRule,
+// Quote ↔ non-quote is a block boundary; two quotes stay one block.
+const blockquoteBoundary: BoundaryRule = (before, after) =>
+	(before.kind === "blockquote") !== (after.kind === "blockquote");
+
+/** Registry; push more predicates to extend. Any boundary keeps the gap. */
+export const BOUNDARY_RULES: BoundaryRule[] = [
+	tableBoundary,
+	headingBoundary,
+	thematicBreakBoundary,
+	calloutBoundary,
+	frontmatterBoundary,
+	blockquoteBoundary,
 ];
-
-/** Blank-line cleanup that keeps runs voted useful by BUILTIN_RULES. */
-export function removeBlankLinesWithDetector(text: string): string {
-	const doc = scanDocument(text);
-	const runsByStart = new Map(doc.runs.map((r) => [r.start, r]));
-	const out: string[] = [];
-	let i = 0;
-	while (i < doc.lines.length) {
-		const line = doc.lines[i];
-		if (line.kind !== "blank" || line.region !== "none") {
-			out.push(line.raw);
-			i++;
-			continue;
-		}
-		const run = runsByStart.get(i)!;
-		if (run.useful) out.push("");
-		i = run.end;
-	}
-	return out.join("\n");
-}

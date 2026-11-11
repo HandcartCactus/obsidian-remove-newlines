@@ -3,7 +3,7 @@
 ## Core Features
 Adds four commands:
 + `Remove newlines from selection` and `Paste without newlines` can remove newlines from text. They can turn hard-wrapped text into a single paragraph. These commands can optionally remove word-break hyphenation and fix consecutive whitespace issues.  This is especially useful when pasting text from a PDF.
-+ `Remove blank lines from selection` and `Paste without blank lines` can remove blank lines from text. These commands are especially useful when pasting content from the web, which can often have a gratuitous amount of blank lines and whitespace. Blank lines that Markdown needs to render what you pasted are kept: the ones around tables and headings, dividers, callouts, and blockquotes, and the ones inside code blocks, frontmatter, `$$` math, and `%%` comments. Blank lines *between* table rows are still removed, so tables pasted from PDFs or rich text still get repaired. This can be turned off in the settings.
++ `Remove blank lines from selection` and `Paste without blank lines` can remove blank lines from text, which is especially useful when pasting web content with gratuitous whitespace. Blank lines Markdown needs are kept: around tables, headings, dividers, callouts and blockquotes, and inside code blocks, frontmatter, math and comments. Blank lines *between* table rows are still removed, so tables pasted from PDFs get repaired. Can be turned off in settings.
 
 The commands will appear in the context menu (right-click), but can also be invoked via the Command Palette or bound to a keyboard shortcut.
  
@@ -37,9 +37,11 @@ There are no hotkeys for these actions by default, but you can create them in th
 ![A screenshot of the hotkey menu in the Obsidian settings modal](media/Add%20Hotkeys.png)
 
 ## What's New?
+### 1.0.8
+- Removing blank lines keeps the blank lines Markdown needs, so tables and other blocks no longer break. Can be disabled in settings ("Preserve useful blank lines").
+
 ### 1.0.7
 - Convert HTML formatting to markdown while pasting, instead of stripping text.
-- Removing blank lines no longer breaks tables, headings, dividers, callouts, blockquotes, frontmatter, code blocks, math, and comments. Blank lines inside a table are still removed. Can be disabled in settings ("Preserve useful blank lines").
 
 ### 1.0.6
 - Refactors core code and introduces testing
