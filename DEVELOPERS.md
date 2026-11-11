@@ -17,3 +17,8 @@ Deploying a release:
 15. create new tag for version, paste changelog notes
 16. Click "attach binaries by dropping them here or selecting them", select your `main.js`, `styles.css`, and `manifest.json`.
 17. click "release".
+
+## Blank-line cleanup
+`removeBlankLines` in [`utils.ts`](utils.ts) delegates to `removeBlankLinesWithDetector` in [`detector.ts`](detector.ts) when the "Preserve useful blank lines" setting is on (default). The detector splits the text into lines, marks protected regions (fenced code, frontmatter, `$$` math, `%%` comments — blank lines there pass through untouched), classifies every other line, and then asks each rule in `BUILTIN_RULES` whether a run of blank lines is useful. Any rule returning true keeps one blank line; otherwise the run is dropped.
+
+To add a rule, append an object to `BUILTIN_RULES` (`{ id, isUseful(run, doc) }`) and cover it in `tests/detector.test.ts`. Rules are any-vote: a new rule can only preserve more, never take away another rule's decision.

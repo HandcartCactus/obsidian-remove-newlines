@@ -1,4 +1,5 @@
 import { htmlToMarkdown } from "obsidian";
+import { removeBlankLinesWithDetector } from "detector";
 /* 
 
 This file was broken out so that I could implement testing for the plugin.
@@ -20,8 +21,13 @@ const removeNewlines = function(text: string, fixHyphenation:boolean, fixWhitesp
     return text;
 }
 
-const removeBlankLines = function(text: string): string {
-    // text = text.replace(/[\r\n]+([\s]*[\r\n]+)+/g, "\r\n");
+const removeBlankLines = function(text: string, preserveUseful = true): string {
+    if (preserveUseful) {
+        // Keep blank lines markdown needs for block structure (tables,
+        // headings, ...). See docs/useful-blank-lines-plan.md.
+        return removeBlankLinesWithDetector(text);
+    }
+    // Legacy behavior: drop every blank line.
     text = text
     .split(/\r?\n/)
     .filter(line => line.trim() !== "")
