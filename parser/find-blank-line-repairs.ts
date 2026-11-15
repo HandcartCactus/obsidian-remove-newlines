@@ -15,7 +15,7 @@ export interface BlankLineRepair {
 function crossingFeatures(tree: ReturnType<typeof parseOfm>, above: number, below: number) {
     const features: { type: Nodes["type"]; position: NonNullable<Node["position"]> }[] = [];
     visit(tree, node => {
-        if (node.type === "root" || node.type === "paragraph" || node.type === "text") return;
+        if (node.type === "root" || node.type === "paragraph" || node.type === "text" || node.type === "break") return;
         const pos = node.position;
         if (pos && pos.start.line <= above && pos.end.line >= below) features.push({ type: node.type, position: pos });
     });

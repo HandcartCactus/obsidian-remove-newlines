@@ -1,6 +1,15 @@
 # parser
 This directory is in support of remove-newlines understanding various markdown features to support syntax-aware newline removal.
 
+The parser uses Quartz's `legacy` preset for Obsidian reading-mode syntax.
+Single-line display math is an `inlineMath` node with `data.display === true`.
+Embeds are `wikilink` nodes with `embedded === true`. The local adapters
+preserve literal inline HTML and expose terminal block definitions as
+`obsidianBlockId` nodes with source positions.
+
+Run the parser regression tests from the repository root with
+`npm test --workspace remove-newlines-ofm-parser`.
+
 ## Potentially Useful Links:
 + https://help.obsidian.md/obsidian-flavored-markdown#Supported+Markdown+extensions
 + https://www.npmjs.com/package/@heavycircle/remark-obsidian
