@@ -10,11 +10,13 @@ import {
 import { removeNewlines, removeBlankLines, clipboardItemToString } from "utils";
 
 interface RemoveNewlineSettings {
+	showClassicContextMenu: boolean;
 	fixWhitespace: boolean;
 	fixHyphenation: boolean;
 }
 
 const DEFAULT_SETTINGS: RemoveNewlineSettings = {
+	showClassicContextMenu: true,
 	fixWhitespace: true,
 	fixHyphenation: true,
 };
@@ -59,6 +61,8 @@ export default class RemoveNewline extends Plugin {
 		// Context menu / Remove newlines / Selection
 		this.registerEvent(
 			this.app.workspace.on("editor-menu", (menu, editor, view) => {
+				if (!this.settings.showClassicContextMenu) return;
+
 				menu.addItem((item) => {
 					item.setTitle("Remove newlines from selection")
 						.setIcon("square-bottom-dashed-scissors")
@@ -73,6 +77,8 @@ export default class RemoveNewline extends Plugin {
 		// Context menu  / Remove newlines  / Paste
 		this.registerEvent(
 			this.app.workspace.on("editor-menu", (menu, editor, view) => {
+				if (!this.settings.showClassicContextMenu) return;
+
 				menu.addItem((item) => {
 					item.setTitle("Paste without newlines")
 						.setIcon("clipboard-paste")
@@ -87,6 +93,8 @@ export default class RemoveNewline extends Plugin {
 		// Context menu / Remove Blank Lines / Selection
 		this.registerEvent(
 			this.app.workspace.on("editor-menu", (menu, editor, view) => {
+				if (!this.settings.showClassicContextMenu) return;
+
 				menu.addItem((item)  => {
 					item.setTitle("Remove blank lines from selection")
 						.setIcon("square-bottom-dashed-scissors")
@@ -99,6 +107,8 @@ export default class RemoveNewline extends Plugin {
 		// Context menu / Remove Blank Lines / Paste
 		this.registerEvent(
 			this.app.workspace.on("editor-menu", (menu, editor, view) => {
+				if (!this.settings.showClassicContextMenu) return;
+
 				menu.addItem((item) => {
 					item.setTitle("Paste without blank lines")
 						.setIcon("clipboard-paste")
@@ -219,6 +229,20 @@ class RemoveNewlineSettingsTab extends PluginSettingTab {
 		const { containerEl } = this;
 
 		containerEl.empty();
+
+		containerEl.createEl("h2", { text: "Classic" });
+
+		new Setting(containerEl)
+			.setName("Show classic options in context menu")
+			.setDesc("Show remove newlines and remove blank lines actions in the editor context menu. Commands and hotkeys remain available when hidden.")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.showClassicContextMenu)
+					.onChange(async (value) => {
+						this.plugin.settings.showClassicContextMenu = value;
+						await this.plugin.saveSettings();
+					})
+			);
 
 		new Setting(containerEl)
 			.setName("Fix whitespace when removing newlines")
