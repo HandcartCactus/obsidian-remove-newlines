@@ -2,6 +2,7 @@
 	"name": "obsidian-remove-newlines",
 	"version": "1.0.6",
 	"description": "This plugin adds context menu options and commands to:\n 1. Remove newlines from text selections.\n 2. Paste content from the clipboard without newlines.",
+	"workspaces": ["parser"],
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
