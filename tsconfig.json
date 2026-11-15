@@ -3,13 +3,14 @@
     "baseUrl": ".",
     "inlineSourceMap": true,
     "inlineSources": true,
-    "module": "ESNext",
+    "module": "Node16",
     "target": "ES6",
     "allowJs": true,
     "noImplicitAny": true,
-    "moduleResolution": "node",
+    "moduleResolution": "Node16",
     "importHelpers": true,
     "isolatedModules": true,
+    "skipLibCheck": true,
 	"strictNullChecks": true,
     "lib": [
       "DOM",
@@ -19,6 +20,7 @@
     ]
   },
   "include": [
-    "**/*.ts"
+    "**/*.ts",
+    "**/*.mts"
   ]
 }
