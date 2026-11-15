@@ -1,5 +1,7 @@
 # Remove Newlines
 
+> ⚠️ This plugin is currently broken on mobile due to a permissions change in v1.15.0. I am investigating workarounds.
+
 ## Core Features
 Adds four commands:
 + `Remove newlines from selection` and `Paste without newlines` can remove newlines from text. They can turn hard-wrapped text into a single paragraph. These commands can optionally remove word-break hyphenation and fix consecutive whitespace issues.  This is especially useful when pasting text from a PDF.
