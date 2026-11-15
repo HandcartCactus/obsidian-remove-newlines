@@ -12,11 +12,15 @@ import { removeNewlines, removeBlankLines, clipboardItemToString } from "utils";
 interface RemoveNewlineSettings {
 	fixWhitespace: boolean;
 	fixHyphenation: boolean;
+	preserveUsefulBlankLines: boolean;
+	trimTrailingWhitespace: boolean;
 }
 
 const DEFAULT_SETTINGS: RemoveNewlineSettings = {
 	fixWhitespace: true,
 	fixHyphenation: true,
+	preserveUsefulBlankLines: true,
+	trimTrailingWhitespace: false,
 };
 
 export default class RemoveNewline extends Plugin {
@@ -159,7 +163,11 @@ export default class RemoveNewline extends Plugin {
 	}
 
 	removeBlankLines = (text: string): string => {
-		return removeBlankLines(text);
+		return removeBlankLines(
+			text,
+			this.settings.preserveUsefulBlankLines,
+			this.settings.trimTrailingWhitespace
+		);
 	}
 
 
@@ -244,6 +252,34 @@ class RemoveNewlineSettingsTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.fixHyphenation)
 					.onChange(async (value) => {
 						this.plugin.settings.fixHyphenation = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Preserve useful blank lines")
+			.setDesc(
+				"When removing blank lines, keep the ones markdown needs to render tables, headings, dividers, callouts, blockquotes, code blocks, and frontmatter. (Recommended)"
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.preserveUsefulBlankLines)
+					.onChange(async (value) => {
+						this.plugin.settings.preserveUsefulBlankLines = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Trim trailing whitespace")
+			.setDesc(
+				"Also remove trailing whitespace from every kept line, not just blank lines. This drops Markdown hard line breaks (two trailing spaces) and changes the contents of code blocks."
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.trimTrailingWhitespace)
+					.onChange(async (value) => {
+						this.plugin.settings.trimTrailingWhitespace = value;
 						await this.plugin.saveSettings();
 					})
 			);
