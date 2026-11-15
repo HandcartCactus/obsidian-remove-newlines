@@ -3,18 +3,16 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@silicajs/remark-obsidian": "0.1.0",
+    "@quartz-community/remark-obsidian": "2.2.1",
     "@types/mdast": "^4.0.4",
-    "@ziloen/remark-math": "0.1.2",
-    "mdast-util-math": "^3.0.0",
-    "mdast-util-to-markdown": "^2.2.3",
     "parse5": "^7.3.0",
-    "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
     "remark-stringify": "^11.0.0",
     "unified": "^11.0.5",
-    "unist-util-visit": "^5.2.0",
-    "vfile-location": "^5.0.4"
+    "unist-util-visit": "^5.2.0"
+  },
+  "scripts": {
+    "test": "esbuild parse-ofm-strict.mts find-blank-line-repairs.ts --bundle --platform=node --format=esm --out-extension:.js=.mjs --outdir=node_modules/.cache/test && node --test test/ofm.mjs"
   }
 }

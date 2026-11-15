@@ -26,8 +26,7 @@ function maskNonHtml(children: Parent["children"], source: string) {
 }
 
 // "a <span>**b**</span>" keeps the whole span as one literal HTML node.
-function mergeInlineElements(parent: Parent, source: string) {
-    const children = parent.children;
+function mergeInlineElements(children: Parent["children"], source: string) {
     if (!children.some(child => child.type === "html")) return;
 
     const fragment = maskNonHtml(children, source);
@@ -54,6 +53,6 @@ function mergeInlineElements(parent: Parent, source: string) {
 
 export function preserveInlineHtml(tree: Root, source: string) {
     visit(tree, node => {
-        if ("children" in node && node.type !== "root") mergeInlineElements(node, source);
+        if (node.type !== "root" && "children" in node && node.children) mergeInlineElements(node.children, source);
     });
 }
