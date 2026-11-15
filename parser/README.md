@@ -8,15 +8,14 @@ This directory is in support of remove-newlines understanding various markdown f
 + https://github.com/jqhoogland/remark-preset-obsidian
 + https://forum.obsidian.md/t/obsidian-markdown-parser/55922/3
 
-# running the parser
-```
-npm i unified remark-parse remark-gfm remark-obsidian remark-frontmatter unist-util-inspect fs
+# Running the parser
+
+From the repository root, install the dependencies and print the fixture AST:
+
+```sh
+npm ci
+npx esbuild parser/ofm-parser.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/ofm-parser.mjs
+node node_modules/.cache/ofm-parser.mjs
 ```
 
-```
-tsc ofm-parser.ts
-```
-
-```
-node ofm-parser.js
-```
+Pass a Markdown file path as the final argument to inspect a different note.
